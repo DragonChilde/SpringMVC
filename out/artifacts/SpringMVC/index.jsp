@@ -5,7 +5,7 @@
   Time: 10:24
   To change this template use File | Settings | File Templates.
 --%>
-<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" isErrorPage="false" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java"  %>
 <html>
 <head>
     <title>index</title>
@@ -49,6 +49,35 @@
 <!-- 查询id为1001的订单 -->
 <a href="order/1001">REST GET</a>
 <br/>
+<a href="testRequestParam?username=test">Test Request Param</a>
+<br>
+<a href="testRequestHeader">Test Request Header</a>
+<br/>
+<a href="testCookieValue">Test Cookie Value</a>
+<br/>
+<form action="testPOJO" method="post">
+    用户名称: <input type="text" name="username"/>
+    <br/>
+    用户密码: <input type="password" name="password"/>
+    <br/>
+    用户邮箱: <input type="text" name="email"/>
+    <br/>
+    用户性别: 男 <input type="radio" name="gender" value="1"/>
+    女<input type="radio" name="gender" value="0"/>
+    <br/>
+    <!-- 支持级联的方式 -->
+    用户省份: <input type="text" name="address.province" />
+    <br/>
+    用户城市: <input type="text" name="address.city"/>
+    <br/>
+    <input type="submit" value="注册"/>
 
+</form>
+<br/>
+<a href="testServletAPI">Test Servlet API</a>
+<br/>
+<a href="testModelAndView">Test Model And View</a>
+<br/>
+<a href="testMap">Test Map</a>
 </body>
 </html>

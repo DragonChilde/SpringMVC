@@ -514,14 +514,246 @@ URL 中的 {xxx} 占位符可以通过 @PathVariable("xxx") 绑定到操作方�
 
 **请求处理方法签名**
 
-1. Spring MVC 通过分析处理方法的签名，HTTP请求信息绑定到处理方法的相应人参中
+1. Spring MVC 通过分析处理方法的签名，HTTP请求信息绑定到处理方法的相应形参中
 2. Spring MVC 对控制器处理方法签名的限制是很宽松的，几乎可以按喜欢的任何方式对方法进行签名。 
 3.	必要时可以对方法及方法入参标注相应的注解（ @PathVariable 、@RequestParam、@RequestHeader 等）、
 4.	Spring MVC 框架会将 HTTP 请求的信息绑定到相应的方法入参中，并根据方法的返回值类型做出相应的后续处理。
 
-**@@RequestParam注解**
+**@RequestParam注解**
 
 1. 在处理方法入参处使用 @RequestParam 可以把请求参数传递给请求方法
-2. value：参数名
-3. required：是否必须。默认为 true, 表示请求参数中必须包含对应的参数，若不存在，将抛出异常
-4. defaultValue: 默认值，当没有传递参数时使用该值
+2. **value**：参数名
+3. **required**：是否必须。默认为 true, 表示请求参数中必须包含对应的参数，若不存在，将抛出异常
+4. **defaultValue**: 默认值，当没有传递参数时使用该值
+
+示例：
+
+	/**
+     * @RequestParam  映射请求参数到请求处理方法的形参
+     * 	 1. 如果请求参数名与形参名一致， 则可以省略@RequestParam的指定，推荐是指定value。
+     * 	 2. @RequestParam 注解标注的形参必须要赋值。 必须要能从请求对象中获取到对应的请求参数。
+     * 		可以使用required来设置为不是必须的。
+     * 	 3. 可以使用defaultValue来指定一个默认值取代null
+     * 客户端的请求:testRequestParam?username=test&age=22
+     */
+	/**age如果设置成Integer类型话，不设置默认值是不会报错的,但int会因为无法转成null会报异常,因此必须设置默认值**/
+    @RequestMapping(value = "testRequestParam")
+    public String testRequestParam(@RequestParam(value = "username") String username ,@RequestParam(value = "age",required = false,defaultValue = "20") int age)
+    {
+
+        System.out.println("username is "+username+" , age is "+age);
+        return "success";
+    }
+链接
+	
+	<a href="testRequestParam?username=test">Test Request Param</a>
+
+**@RequestHeader注解**
+
+1. 使用@RequestHeader绑定请求报头的属性值
+2. 请求头包含了若干个属性，服务器可据此获知客户端的信息，通过 @RequestHeader即可将请求头中的属性值绑定到处理方法的入参中
+
+示例:
+
+    /**
+     * @RequestHeader  映射请求头信息到请求处理方法的形参中
+     */
+	/**参数和上面的@RequestParam一样，可以参考上面**/
+    @RequestMapping(value = "testRequestHeader")
+    public String testRequestHeader(@RequestHeader(value = "Accept-Language") String acceptLanguage)
+    {
+        System.out.println("Accept-Language is "+acceptLanguage);	//Accept-Language is en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,ja;q=0.6,zh-TW;q=0.5
+        return "success";
+    }
+
+链接:
+
+	<a href="testRequestHeader">Test Request Header</a>
+
+**@CookieValue 注解**
+
+1. 使用 @CookieValue 绑定请求中的 Cookie 值
+2. @CookieValue 可让处理方法入参绑定某个 Cookie 值
+
+示例:
+
+	/**
+	 * @CookieValue  映射cookie信息到请求处理方法的形参中
+	 */
+  	@RequestMapping(value = "testCookieValue")
+    public String testCookieValue(@CookieValue(value = "JSESSIONID")String sessionid)
+    {
+        System.out.println("JSESSIONID is " +sessionid);	//JSESSIONID is 7B2527085E486EA645238B11FFB626C9
+        return "success";
+    }
+
+链接:
+
+	<a href="testCookieValue">Test Cookie Value</a>
+
+**使用POJO作为参数**
+
+1. 使用 POJO 对象绑定请求参数值
+2. Spring MVC 会按请求参数名和 POJO 属性名进行自动匹配，自动为该对象填充属性值。支持级联属性。如：dept.deptId、dept.address.tel 等
+
+示例:
+
+	/**
+	 * Spring MVC 会按请求参数名和 POJO 属性名进行自动匹配， 自动为该对象填充属性值。
+	 * 支持级联属性
+	 *                 如：dept.deptId、dept.address.tel 等
+	 */
+	@RequestMapping(value = "testPOJO")
+    public String testPOJO(User user)
+    {
+        System.out.println("User is "+user);	//User is User{username='test', password='123456', email='test@test.com', gender=1, address=Address{province='test1', city='test2'}}
+        return "success";
+    }
+
+表单:
+
+	<form action="testPOJO" method="post">
+	    用户名称: <input type="text" name="username"/>
+	    <br/>
+	    用户密码: <input type="password" name="password"/>
+	    <br/>
+	    用户邮箱: <input type="text" name="email"/>
+	    <br/>
+	    用户性别: 男 <input type="radio" name="gender" value="1"/>
+	    女<input type="radio" name="gender" value="0"/>
+	    <br/>
+	    <!-- 支持级联的方式 -->
+	    用户省份: <input type="text" name="address.province" />
+	    <br/>
+	    用户城市: <input type="text" name="address.city"/>
+	    <br/>
+	    <input type="submit" value="注册"/>
+	</form>
+
+增加两个实体类:
+
+	com.springmvc.bean.Address
+	com.springmvc.bean.User
+
+**如果中文有乱码，需要配置字符编码过滤器，且配置其他过滤器之前,如（HiddenHttpMethodFilter），否则不起作用。**
+
+**使用Servlet原生API作为参数**
+
+MVC的Handler方法可以接受哪些ServletAPI类型的参数
+
+1. **HttpServletRequest**
+2. **HttpServletResponse**
+3. **HttpSession**
+4. java.security.Principal(关于安全)
+5. Locale
+6. InputStream
+7. OutputStream
+8. Reader
+9. Writer
+
+重点是HttpServletRequest和HttpServletResponse，只要获取得到，5-7的类型参数都可以获取到
+
+	/**根据HttpServletRequest和HttpServletResponse，SpringMVC会根据底层封装的JavaWeb进行调用**/
+ 	@RequestMapping(value = "testServletAPI")
+    public void testServletAPI(HttpServletRequest request, HttpServletResponse response) throws Exception
+    {
+        // 转发
+        //request.getRequestDispatcher("/WEB-INF/views/success.jsp").forward(request,response);
+
+        //重定向
+        //response.sendRedirect("http://www.baidu.com");
+
+        response.getWriter().println("Hello SpringMVC!");
+    }
+
+# 处理响应数据 #
+
+**SpringMVC 输出模型数据概述，提供了以下几种途径输出模型数据**
+
+1. **ModelAndView**: 处理方法返回值类型为 ModelAndView 时, 方法体即可通过该对象添加模型数据 
+2. **Map 及 Model**: 入参为 org.springframework.ui.Model、org.springframework.ui.ModelMap 或 java.uti.Map 时，处理方法返回时，Map 中的数据会自动添加到模型中
+
+**处理模型数据之ModelAndView**
+
+1. 控制器处理方法的返回值如果为 ModelAndView, 则其既包含视图信息，也包含模型
+数据信息。
+2. 添加模型数据:
+
+
+		MoelAndView addObject(String attributeName, Object attributeValue)
+		ModelAndView addAllObject(Map<String, ?> modelMap)
+3. 设置视图:
+
+
+		void setView(View view)
+		void setViewName(String viewName)
+
+示例:
+
+	@Controller
+	public class SpringmvcModelAndViewHandler {
+	
+		/**
+		 * 目标方法的返回类型可以是ModelAndView类型其中包含视图信息和模型数据信息
+		 */
+	    /**
+	     * ModelAndView
+	     * 结论: Springmvc会把ModelAndView中的模型数据存放到request域对象中.
+	     */
+	    @RequestMapping(value = "testModelAndView")
+	    public ModelAndView testModelAndView()
+	    {
+	        //模型数据: username=Admin
+	        ModelAndView mav = new ModelAndView();
+	        //添加模型数据
+	        mav.addObject("username","admin");
+	        //设置视图信息
+	        mav.setViewName("view");	 //实质上存放到request域中
+	        return mav;
+	    }
+	}
+
+**view.jsp**
+
+	username: ${requestScope.get("username")} <!-- 四个域对象: pageScope  requestScope sessionScope  applicationScope -->
+
+**源码分析**:
+
+	1. 在com.springmvc.handler.modelandview.SpringmvcModelAndViewHandler.testModelAndView() return里打上断点
+	2.分析看到熟悉的DispatcherServlet.doDispatch()
+	3. mv = ha.handle(processedRequest, response, mappedHandler.getHandler());	//根据mv模型进行分析，mv包含模型数据
+	4.  this.processDispatchResult(processedRequest, response, mappedHandler, mv, (Exception)dispatchException);
+	5.  this.render(mv, request, response);
+	6.  进入render()方法，这时看到定义了接口View view;跟着 mv进入view.render(mv.getModelInternal(), request, response);
+	7.  抽象类AbstractViewc继承View, 过入重写方法render()看到this.renderMergedOutputModel(mergedModel, this.getRequestToExpose(request), response);
+	8.  根据继承类InternalResourceView.renderMergedOutputModel(){this.exposeModelAsRequestAttributes(model, request);}
+	9.  此方法可以看到是个循环把模型里的key和value取出，set到request里
+
+
+**处理模型数据之 Map**
+
+1. Spring MVC 在内部使用了一个 org.springframework.ui.Model 接口存储模型数据
+2. Spring MVC 在调用方法前会创建一个隐含的模型对象作为模型数据的存储容器。
+3. 如果方法的入参为 Map 或 Model 类型，Spring MVC 会将隐含模型的引用传递给这些入参。
+4. 在方法体内，开发者可以通过这个入参对象访问到模型中的所有数据，也可以向模型中添加新的属性数据
+
+![](https://github.com/DragonChilde/MarkdownPhotos/blob/master/photos/10.png)
+![](https://github.com/DragonChilde/MarkdownPhotos/blob/master/photos/11.png)
+
+    /**
+     * Map
+     * 结论: SpringMVC会把Map中的模型数据存放到request域对象中.
+     *      SpringMVC再调用完请求处理方法后，不管方法的返回值是什么类型，都会处理成一个ModelAndView对象（参考DispatcherServlet的doDispatch()方法）
+     */
+    @RequestMapping(value = "testMap")
+    public String testMap(Map<String,Object> map)
+    {
+        System.out.println(map.getClass().getName());   //org.springframework.validation.support.BindingAwareModelMap
+
+        map.put("password" ,123456);
+        return "view";
+    }
+	/**无论是通过ModelAndView或者Map的输出模型，都是同一个处理流程**/
+	/**通赤打印request给的Map类型可以看到用的是BindingAwareModelMap,BindingAwareModelMap的父类ExtendedModelMap继承了ModelMap和Model， 因此即可可以使用Model类型，也可以使用Map类型**/
+
+	

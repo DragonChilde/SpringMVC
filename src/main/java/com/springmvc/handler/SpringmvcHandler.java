@@ -1,9 +1,11 @@
 package com.springmvc.handler;
 
+import com.springmvc.bean.User;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Lee
@@ -89,5 +91,64 @@ public class SpringmvcHandler {
     public String testRestPut(){
         System.out.println("REST PUT ");
         return "success";
+    }
+
+
+    /**
+     * @RequestParam  映射请求参数到请求处理方法的形参
+     * 	 1. 如果请求参数名与形参名一致， 则可以省略@RequestParam的指定。
+     * 	 2. @RequestParam 注解标注的形参必须要赋值。 必须要能从请求对象中获取到对应的请求参数。
+     * 		可以使用required来设置为不是必须的。
+     * 	 3. 可以使用defaultValue来指定一个默认值取代null
+     * 客户端的请求:testRequestParam?username=Tom&age=22
+     */
+    @RequestMapping(value = "testRequestParam")
+    public String testRequestParam(@RequestParam(value = "username") String username ,@RequestParam(value = "age",required = false,defaultValue = "20") int age)
+    {
+
+        System.out.println("username is "+username+" , age is "+age);
+        return "success";
+    }
+
+    /**
+     * @RequestHeader  映射请求头信息到请求处理方法的形参中
+     */
+    @RequestMapping(value = "testRequestHeader")
+    public String testRequestHeader(@RequestHeader(value = "Accept-Language") String acceptLanguage)
+    {
+        System.out.println("Accept-Language is "+acceptLanguage);
+        return "success";
+    }
+
+    /**
+     * @CookieValue  映射cookie信息到请求处理方法的形参中
+     */
+    @RequestMapping(value = "testCookieValue")
+    public String testCookieValue(@CookieValue(value = "JSESSIONID")String sessionid)
+    {
+        System.out.println("JSESSIONID is " +sessionid);
+        return "success";
+    }
+
+    /**
+     * POJO
+     */
+    @RequestMapping(value = "testPOJO")
+    public String testPOJO(User user)
+    {
+        System.out.println("User is "+user);
+        return "success";
+    }
+
+    @RequestMapping(value = "testServletAPI")
+    public void testServletAPI(HttpServletRequest request, HttpServletResponse response) throws Exception
+    {
+        // 转发
+        //request.getRequestDispatcher("/WEB-INF/views/success.jsp").forward(request,response);
+
+        //重定向
+        //response.sendRedirect("http://www.baidu.com");
+
+        response.getWriter().println("Hello SpringMVC!");
     }
 }
