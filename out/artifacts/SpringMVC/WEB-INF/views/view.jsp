@@ -14,5 +14,7 @@
 username: ${requestScope.get("username")}    <!-- 四个域对象: pageScope  requestScope sessionScope  applicationScope -->
 <br/>
 password: ${requestScope.get("password")}
+<br/>
+loginMsg:${requestScope.get("loginMsg")}
 </body>
 </html>
