@@ -737,8 +737,8 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
 3. 如果方法的入参为 Map 或 Model 类型，Spring MVC 会将隐含模型的引用传递给这些入参。
 4. 在方法体内，开发者可以通过这个入参对象访问到模型中的所有数据，也可以向模型中添加新的属性数据
 
-![](https://github.com/DragonChilde/MarkdownPhotos/blob/master/photos/10.png)
-![](https://github.com/DragonChilde/MarkdownPhotos/blob/master/photos/11.png)
+![](http://120.77.237.175:9080/photos/sprigmvc/10.png)
+![](http://120.77.237.175:9080/photos/sprigmvc/11.png)
 
     /**
      * Map
