@@ -171,7 +171,7 @@
 	5. 请求处理方法处理完请求,最终方法会返回一个字符串
 	6. 视图解析器根据请求处理方法返回的结果.prefix + returnValue + suffix,解析生成具体的物理视图路径，再通过转发的方式去往视图
 
-	![](https://github.com/DragonChilde/MarkdownPhotos/blob/master/photos/8.png)
+	![](http://120.77.237.175:9080/photos/sprigmvc/8.png)
 
 2. 请求的映射路径名称和处理请求的方法名称最好一致（实质上方法名称任意）
 
@@ -217,7 +217,7 @@
 
 6. 流程分析
 
-![](https://github.com/DragonChilde/MarkdownPhotos/blob/master/photos/9.png)
+![](http://120.77.237.175:9080/photos/sprigmvc/9.png)
 
 基本步骤:
 
