@@ -756,4 +756,4 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
 	/**无论是通过ModelAndView或者Map的输出模型，都是同一个处理流程**/
 	/**通赤打印request给的Map类型可以看到用的是BindingAwareModelMap,BindingAwareModelMap的父类ExtendedModelMap继承了ModelMap和Model， 因此即可可以使用Model类型，也可以使用Map类型**/
 
-	
+gitee12312312312312
