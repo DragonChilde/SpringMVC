@@ -756,4 +756,151 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
 	/**无论是通过ModelAndView或者Map的输出模型，都是同一个处理流程**/
 	/**通赤打印request给的Map类型可以看到用的是BindingAwareModelMap,BindingAwareModelMap的父类ExtendedModelMap继承了ModelMap和Model， 因此即可可以使用Model类型，也可以使用Map类型**/
 
-gitee12312312312312
+# 视图解析 #
+
+**SpringMVC如何解析视图概述**
+
+![](http://120.77.237.175:9080/photos/sprigmvc/12.png)
+
+1. 不论控制器返回一个String,ModelAndView,View都会转换为ModelAndView对象，由视图解析器解析视图，然后，进行页面的跳转
+2. 视图解析源码分析：重要的两个接口:**View**和**ViewResolver**
+
+**视图和视图解析器**
+
+1. 请求处理方法执行完成后，最终返回一个 ModelAndView 对象。对于那些返回 String，View 或 ModeMap 等类型的处理方法，**Spring MVC也会在内部将它们装配成一个 ModelAndView对象**，它包含了逻辑名和模型对象的视图
+2. Spring MVC借助**视图解析器（ViewResolver）**得到最终的视图对象（View），最终的视图可以是 JSP ，也可能是 Excel、JFreeChart等各种表现形式的视图
+3. 对于最终究竟采取何种视图对象对模型数据进行渲染，处理器并不关心，处理器工作重点聚焦在生产模型数据的工作上，从而实现 MVC 的充分解耦
+
+**视图**
+
+1. **视图**的作用是渲染模型数据，将模型里的数据以某种形式呈现给客户,主要就是完成转发或者是重定向的操作.
+2. 为了实现视图模型和具体实现技术的解耦，Spring 在 org.springframework.web.servlet 包中定义了一个高度抽象的 **View** 接口：
+
+		public interface View {
+		    String RESPONSE_STATUS_ATTRIBUTE = View.class.getName() + ".responseStatus";
+		    String PATH_VARIABLES = View.class.getName() + ".pathVariables";
+		    String SELECTED_CONTENT_TYPE = View.class.getName() + ".selectedContentType";
+		
+		    String getContentType();
+		
+		    void render(Map<String, ?> var1, HttpServletRequest var2, HttpServletResponse var3) throws Exception;
+		}
+
+3. **视图对象由视图解析器负责实例化**。由于视图是**无状态**的，所以他们**不会有线程安全**的问题
+
+**常用的视图实现类**
+
+		URL资源图	**InternalResourceView	将JSP或其它资源封装成一个视图,是InternalResourceViewResolver默认使用的视图实现类
+					**JstlView		如果JSP文件中使用了JSTL国际化标签的功能,则需要使用该视图类
+		
+		文档视图		**AbstractExcelView		Excel文档视图的抽象类.该视图类基于POI构造Excel文档
+					AbstractPdfView		PDF文档视图的抽象类,该视图类基于iText够着PDF文档
+
+		(几个使用JasperReports报表技术的视图)
+		报表视图		ConfigurableJsperReportsView
+					JasperReportsCsvView
+					JasperReportsMultiFormatView
+					JasperReportsHtmlView
+					JasperReportsPdfView
+					JasperReportsXLsView
+		JSON视图		MappingJacksonJsonView		将模型数据通过Jackson开源框架的ObjectMapper以JSON方式输出
+					
+
+**视图解析器**
+
+1. SpringMVC 为逻辑视图名的解析提供了不同的策略，可以在 Spring WEB 上下文中配置一种或多种解析策略，并指定他们之间的先后顺序。每一种映射策略对应一个具体的视图解析器实现类。
+2. 视图解析器的作用比较单一：将逻辑视图解析为一个具体的视图对象。
+3. 所有的视图解析器都必须实现 ViewResolver 接口：
+
+		public interface ViewResolver {
+		    View resolveViewName(String var1, Locale var2) throws Exception;
+		}
+
+**常用的视图解析器实现类**
+
+	解析为Bean的名字	BeanNameViewResolver	将逻辑视图解析为一个Bean，Bean的id等于逻辑视图名
+	解析为URL文件		InternalResourceViewResolver	将视图名解析为一个URL文件,一般使用该解析器将视图名映射为一个保存在WEB-INF目录下的程序文件(如JSP)
+					JasperReportsViewResolver		JasperReports是一个基于Java的开源报表工具,该解析器将视图名解析为报表文件对应的URL
+	模板文件视图		FreeMarkerViewResolver	解析为基于FreeMarker模板技术的模板文件
+					VelocityViewResolver	解析为基于Velocity模板技术的模板文件
+					VelocityLayoutViewResolver
+
+1. 程序员可以选择一种视图解析器或混用多种视图解析器
+2. 每个视图解析器都实现了 Ordered 接口并开放出一个 order 属性，可以通过order属性指定解析器的优先顺序，order越小优先级越高。
+3. SpringMVC会按视图解析器顺序的优先顺序对逻辑视图名进行解析，直到解析成功并返回视图对象，否则将抛出 ServletException 异常
+4. InternalResourceViewResolver
+	1. JSP 是最常见的视图技术，可以使用 InternalResourceViewResolve作为视图解析器： 
+
+		  	 <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		        <property name="prefix" value="/WEB-INF/views/"/>
+		        <property name="suffix" value=".jsp"/>
+		    </bean>
+	2. /WEB-INF/views/xxx/xxx.jsp
+
+**mvc:view-controller标签**
+
+1. 若希望直接响应通过 SpringMVC 渲染的页面，可以使用**mvc:view-controller** 标签实现
+
+		<!-- 不经过Handler直接跳转页面 -->
+		<mvc:view-controller path="testViewContorller" view-name="success"/>
+2. 请求的路径：http://localhost:8080/SpringMVC/testViewContorller
+3. 配置<mvc:view-controller>会导致其他请求路径失效
+
+		<!-- 使用了view-controlelr以后，会导致RequestMapping的映射失效，因此需要加上 annotation-driven的配置 -->
+    	<mvc:annotation-driven/>
+
+**重定向**
+
+1. 关于重定向
+	1. 一般情况下，控制器方法返回字符串类型的值会被当成逻辑视图名处理
+	2. 如果返回的字符串中带 **forward**: 或 **redirect**: 前缀时，SpringMVC 会对他们进行特殊处理：将 forward: 和 redirect: 当成指示符，其后的字符串作为 URL 来处理
+	3. redirect:success.jsp：会完成一个到 success.jsp 的重定向的操作
+	4. forward:success.jsp：会完成一个到 success.jsp 的转发操作
+
+
+# 综合案例RESTRUL_CRUD #
+
+**Beans**:
+
+- com.springmvc.crud.beans.Department
+- com.springmvc.crud.beans.Employee
+
+**DAO**:
+
+- com.springmvc.crud.dao.DepartmentDao
+- com.springmvc.crud.dao.EmployeeDao
+
+
+**Controller(显示所有员工信息)**：
+
+- URI：emps
+- 请求方式：GET 
+
+
+		@RequestMapping(value = "/emps",method = RequestMethod.GET)
+	    public String listAllEmps(Map<String,Object> map)
+	    {
+	        Collection<Employee> emps = employeeDao.getAll();
+	        map.put("emps",emps);
+	        return "list";
+	    }
+
+**View**：
+
+	WEB-INF/views/list.jsp
+
+**注意:因为页面引用了jstl标签,在pom文件引入了相应的jar包,还要把下载好的jar包放到Tomcat下的Lib下才可顺利执行**
+
+	 	<!--导入jstl，解决jsp页面使用jstl标签无效<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>-->
+        <dependency>
+            <groupId>org.apache.taglibs</groupId>
+            <artifactId>taglibs-standard-impl</artifactId>
+            <version>1.2.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.taglibs</groupId>
+            <artifactId>taglibs-standard-spec</artifactId>
+            <version>1.2.5</version>
+        </dependency>
+
