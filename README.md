@@ -871,23 +871,31 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
 - com.springmvc.crud.dao.EmployeeDao
 
 
-**Controller(显示所有员工信息)**：
+**RESTRUL_CRUD_显示所有员工信息**
 
-- URI：emps
-- 请求方式：GET 
+1. 增加页面链接
 
+		<a href="emps">List All Emps</a>
 
-		@RequestMapping(value = "/emps",method = RequestMethod.GET)
-	    public String listAllEmps(Map<String,Object> map)
-	    {
-	        Collection<Employee> emps = employeeDao.getAll();
-	        map.put("emps",emps);
-	        return "list";
-	    }
+2. 增加处理器
 
-**View**：
+	- URI：emps
+	- 请求方式：GET 
 
-	WEB-INF/views/list.jsp
+			/**
+			 * 显示所有的员工信息列表
+			 */
+			@RequestMapping(value = "/emps",method = RequestMethod.GET)
+		    public String listAllEmps(Map<String,Object> map)
+		    {
+		        Collection<Employee> emps = employeeDao.getAll();
+		        map.put("emps",emps);
+		        return "list";
+		    }
+
+3. SpringMVC中没遍历的标签，需要使用jstl标签进行集合遍历增加jstl标签库jar包
+
+		WEB-INF/views/list.jsp
 
 **注意:因为页面引用了jstl标签,在pom文件引入了相应的jar包,还要把下载好的jar包放到Tomcat下的Lib下才可顺利执行**
 
@@ -904,3 +912,211 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
             <version>1.2.5</version>
         </dependency>
 
+**RESTRUL_CRUD_添加操作**
+
+1. 在list.jsp上增加连接
+	
+		<h2 align="center"><a href="emp">Add New Emp</a></h2>
+
+2. 增加处理器方法
+
+		 /**
+	     * 添加功能: 去往添加页面
+	     *
+	     * 添加页面需要部门数据
+	     */
+	    @RequestMapping(value = "emp",method = RequestMethod.GET)
+	    public String toAddPage(Map<String,Object>map)
+	    {
+	
+	        Collection<Department> departments = departmentDao.getDepartments();
+	        map.put("depts",departments);
+	
+			//2. 构造页面中生成单选框的数据
+	        HashMap<String, String> hashMap = new HashMap<>();
+	        hashMap.put("0","女");
+	        hashMap.put("1","男");
+	
+			//3. 设置页面中要回显的数据
+	        //解决错误：java.lang.IllegalStateException: Neither BindingResult nor plain target object for bean name 'command' available as request attribute
+	        map.put("employee",new Employee());
+	
+	        map.put("genders",hashMap);
+	        return "input";
+	    }
+
+3. 显示添加页面(\WEB-INF\views\input.jsp)
+
+		<%--页面使用了SpringMVC的form标签,因为要引入标签--%>
+		<%@taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+		<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+		<html>
+		<head>
+		    <title>Title</title>
+		</head>
+		<body>
+		<!-- Springmvc的表单标签：
+					 1. 可以快速的开发表单
+					 2. 可以更加方便的回显数据.
+		
+				Springmvc表单标签遇到的问题:
+					Neither BindingResult nor plain target object
+					for bean name 'command' available as request attribute
+		
+				问题原因: Springmvc的表单标签必须要进行数据的回显。 默认会使用"command"这个key到request中
+				                  找回显的数据。如果找不到，则抛出异常。
+				问题解决: 让Springmvc可以通过"command"从request中找到要回显的数据.
+						还可以通过modelAttribute来指定一个key替换默认的command
+		
+				表单标签在最终执行时会转化成原始的HTML标签.
+			 -->
+		<%--注意这里必须指定command回显的key,不然必报异常,employee是在Controller指定了空对象--%>
+		<form:form action="emp" method="post" modelAttribute="employee">
+		    lastName:<form:input path="lastName" /> <!-- path就相当于HTML中input标签中的name属性 -->
+		    <!--  <input type="text"	 name="lastName"/> -->
+		    <br/>
+		    Email:<form:input path="email"/>
+		    <br/>
+		    <!-- radiobuttons 可以根据Map数据来生成单选框 -->
+		    Gender:<form:radiobuttons path="gender" items="${genders}"/>
+		    <br/>
+		    deptName:<form:select path="department.id" items="${depts}" itemLabel="departmentName" itemValue="id"/>
+		        <!-- <select name="department.id">
+		        <option value="1">开发部</option>
+		        <option value="2">测试部</option>
+		        </select> -->
+		    <br/>
+		    <input type="submit" name="ADD"/>
+		</form:form>
+		</body>
+		</html>
+4. 当没指定modelAttribute回显报异常
+
+	![](http://120.77.237.175:9080/photos/sprigmvc/13.png)
+
+**使用Spring的表单标签**
+
+1. 通过 SpringMVC 的**表单标签**可以实现将模型数据中的属性和 HTML 表单元素相绑定，以实现表单数据**更便捷编辑和表单值的回显**
+2. form 标签
+	- 一般情况下，**通过 GET 请求获取表单页面，而通过 POST 请求提交表单页面，因此获取表单页面和提交表单页面的 URL 是相同的。**
+	- **只要满足该最佳条件的契约，<form:form> 标签就无需通过 action 属性指定表单提交的 URL**
+	- 可以通过 modelAttribute 属性指定绑定的模型属性，若没有指定该属性，则默认从 request 域对象中读取 command 的表单 bean，如果该属性值也不存在，则会发生错误。
+3. SpringMVC 提供了多个表单组件标签，如 <form:input/>、<form:select/> 等，用以绑定表单字段的属性值，它们的共有属性如下：
+	- **path：表单字段，对应 html 元素的 name 属性，支持级联属性**
+	- htmlEscape：是否对表单值的 HTML 特殊字符进行转换，默认值为 true
+	- cssClass：表单组件对应的 CSS 样式类名
+	- cssErrorClass：表单组件的数据存在错误时，采取的 CSS 样式
+4. form:input、form:password、form:hidden、form:textarea：对应 HTML 表单的 text、password、hidden、textarea 标签
+5. form:radiobutton：单选框组件标签，当表单 bean 对应的属性值和 value 值相等时，单选框被选中
+6. **form:radiobuttons**：单选框组标签，用于构造多个单选框
+	- **items**：可以是一个 List、String[] 或 Map
+	- **itemValue**：指定 radio 的 value 值。可以是集合中 bean 的一个属性值
+	- **itemLabel**：指定 radio 的 label 值
+	- **delimiter**：多个单选框可以通过 delimiter 指定分隔符
+7. form:checkbox：复选框组件。用于构造单个复选框
+8. form:checkboxs：用于构造多个复选框。使用方式同 form:radiobuttons 标签
+9. form:select：用于构造下拉框组件。使用方式同 form:radiobuttons 标签
+10. form:option：下拉框选项组件标签。使用方式同 form:radiobuttons 标签
+11. **form:errors**：显示表单组件或数据校验所对应的错误
+	- <form:errors path= “*” /> ：显示表单所有的错误
+	- <form:errors path= “user*” /> ：显示所有以 user 为前缀的属性对应的错误
+	- <form:errors path= “username” /> ：显示特定表单对象属性的错误
+
+**添加员工实验代码**
+
+控制器方法
+
+	/**
+     * 添加功能 : 具体的添加操作
+     */
+    @RequestMapping(value = "emp" ,method = RequestMethod.POST)
+    public String addEmp(Employee employee)
+    {
+        //添加员工
+        employeeDao.save(employee);
+        //回到列表页面 :重定向到显示所有员工信息列表的请求.
+        return "redirect:/emps";
+    }
+
+**RESTRUL_CRUD_删除操作&处理静态资源**
+
+1. 引入静态资源/scripts/jquery-3.4.1.min.js
+2. 访问http://localhost:8080/SpringMVC/scripts/jquery-3.4.1.min.js,会报404异常
+3. 解决办法，SpringMVC 处理静态资源
+	1. 为什么会有这样的问题:
+
+		Springmvc处理静态资源的问题:
+		静态资源:  .js  .css  .html  .txt  .png  .jpg  .avi 等.
+		
+		因为DispatcherServlet的 <url-pattern> 配置的是/ , 会匹配到所有的请求(排除jsp的请求).
+		因为请求的.js文件，是一个静态资源请求，交给DispatcherServlet后就会出现no mapping found 问题。
+		解决问题:
+		1. 修改<url-pattern>为后缀匹配. 但是不建议这么做， 对REST的支持不好. 因为一个优秀的REST 不希望请求
+		URL带有任何后缀.
+		2. 在springmvc.xml中加上一个配置: <mvc:default-servlet-handler/>
+		<mvc:annotation-driven/>
+
+		优雅的REST风格的资源URL不希望带.html或.do等后缀，若将DispatcherServlet请求映射配置为/, 则 Spring MVC将捕获WEB容器的所有请求, 包括静态资源的请求,SpringMVC会将他们当成一个普通请求处理, 因找不到对应处理器将导致错误。
+
+	2. 解决: 在SpringMVC的配置文件中配置 
+	
+		<mvc:default-servlet-handler/>
+
+4. 配置后，原来页面的请求又不好使了需要加多配置
+
+		<mvc:annotation-driven />
+
+**关于<mvc:default-servlet-handler/>作用**
+
+	<!-- 
+	<mvc:default-servlet-handler/> 将在 SpringMVC 上下文中定义一个 DefaultServletHttpRequestHandler，
+	它会对进入DispatcherServlet的请求进行筛查，如果发现是没有经过映射的请求，
+	就将该请求交由WEB应用服务器(Tomcat)默认的Servlet处理，如果不是静态资源的请求，才由DispatcherServlet继续处理
+	一般WEB应用服务器(Tomcat)默认的 Servlet 的名称都是 default。
+	若所使用的WEB服务器的默认 Servlet 名称不是 default，则需要通过 default-servlet-name 属性显式指定 
+	配置了default-serlvet-handler后，RequestMapping的映射会失效，需要加上annotation-driven的配置。       
+	-->
+	参考：CATALINA_HOME/config/web.xml
+	 <servlet>
+        <servlet-name>default</servlet-name>
+        <servlet-class>org.apache.catalina.servlets.DefaultServlet</servlet-class>
+        <init-param>
+            <param-name>debug</param-name>
+            <param-value>0</param-value>
+        </init-param>
+        <init-param>
+            <param-name>listings</param-name>
+            <param-value>false</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+	<!--该标签属性default-servlet-name默认值是"default",可以省略。<mvc:default-servlet-handler/> -->
+
+**因此注意:下面这两个在SpringMVC里是必配的**
+
+    <mvc:default-servlet-handler/>
+  	<mvc:annotation-driven/>
+
+**删除操作**
+
+在\WEB-INF\views\list.jsp增加DELET的POST请求
+
+	<form action="/emp" method="post">
+	    <input type="hidden" name="_method" value="DELETE"/>
+	</form>
+
+控制器方法
+
+	 /**
+     * 删除功能
+     */
+    @RequestMapping(value = "emp/{id}",method = RequestMethod.DELETE)
+    public String deleteEmp(@PathVariable("id")Integer id)
+    {
+        //删除员工
+        employeeDao.delete(id);
+        //重定向到列表
+        return "redirect:/emps";
+    }
+
+**RESTRUL_CRUD_修改操作**

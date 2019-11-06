@@ -18,6 +18,7 @@
       <list>
         <option value="Class" />
         <option value="Jsp File" />
+        <option value="JavaScript File" />
       </list>
     </option>
   </component>
@@ -315,7 +316,7 @@
       <workItem from="1572861788275" duration="169000" />
       <workItem from="1572919876241" duration="1770000" />
       <workItem from="1572924293780" duration="8825000" />
-      <workItem from="1573006648063" duration="596000" />
+      <workItem from="1573006648063" duration="12045000" />
     </task>
     <servers />
   </component>

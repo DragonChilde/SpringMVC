@@ -25,4 +25,18 @@
     <mvc:view-controller path="testViewContorller" view-name="success"/>
     <!-- 使用了view-controlelr以后，会导致RequestMapping的映射失效，因此需要加上 annotation-driven的配置 -->
     <mvc:annotation-driven/>
+
+
+    <!--
+		将在 SpringMVC 上下文中定义一个 DefaultServletHttpRequestHandler，
+		它会对进入 DispatcherServlet 的请求进行筛查，如果发现是没有经过映射的请求，
+		就将该请求交由 WEB 应用服务器默认的 Servlet 处理，如果是由映射的请求，才由 DispatcherServlet 继续处理
+
+		如果web应用服务器的默认的Serlvet的名字不叫"default",则需要通过default-servlet-name来进行指定.
+
+		配置了default-serlvet-handler后，RequestMapping的映射会失效，需要加上annotation-driven的配置。
+	 -->
+    <!--注意:下面这两个在SpringMVC里是必配的-->
+    <mvc:default-servlet-handler/>
+  <!--  <mvc:annotation-driven/>-->
 </beans>
