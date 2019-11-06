@@ -59,6 +59,21 @@
             <scope>provided</scope>
         </dependency>
 
+        <!--导入jstl，解决jsp页面使用jstl标签无效<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>-->
+        <dependency>
+            <groupId>org.apache.taglibs</groupId>
+            <artifactId>taglibs-standard-impl</artifactId>
+            <version>1.2.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.taglibs</groupId>
+            <artifactId>taglibs-standard-spec</artifactId>
+            <version>1.2.5</version>
+        </dependency>
+
+
+
     </dependencies>
 
     <build>

@@ -80,6 +80,10 @@
 <br/>
 <a href="testMap">Test Map</a>
 <br/>
-<a href="testModel">Test Model</a>
+<a href="testViewContorller">Test ViewController</a>
+<br/>
+<a href="testRedirectView">Test RedirectView</a>
+<br/>
+<a href="emps">List All Emps</a>
 </body>
 </html>

@@ -1,7 +1,6 @@
 package com.springmvc.handler.modelandview;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -45,10 +44,8 @@ public class SpringmvcModelAndViewHandler {
         return "view";
     }
 
-    @RequestMapping(value = "testModel")
-    public String testModel(Model model)
-    {
-        model.addAttribute("loginMsg","用户名或者密码错误！");
-        return "view";
+    @RequestMapping(value = "testRedirectView")
+    public String testRedirectView(){
+        return "redirect:/ok.jsp";
     }
 }
