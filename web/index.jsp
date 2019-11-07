@@ -85,6 +85,7 @@
 <a href="testRedirectView">Test RedirectView</a>
 <br/>
 <a href="emps">List All Emps</a>
-
+<br/>
+<a href="testJson">Test Json</a>
 </body>
 </html>

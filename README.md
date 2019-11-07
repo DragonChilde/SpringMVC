@@ -430,6 +430,7 @@ URL 中的 {xxx} 占位符可以通过 @PathVariable("xxx") 绑定到操作方�
     <filter-mapping>
         <filter-name>hiddenHttpMethodFilter</filter-name>
         <url-pattern>/*</url-pattern>
+	</filter-mapping>
 
 **Controller**
 
@@ -1120,3 +1121,177 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
     }
 
 **RESTRUL_CRUD_修改操作**
+
+**根据id查询员工对象，表单回显**
+
+1. 页面链接
+
+		 <a href="emp/${emp.id}">Edit </a>
+
+2. 控制器方法
+
+
+		   /**
+		     * 修改功能: 去往修改页面
+		     */
+		    @RequestMapping(value = "emp/{id}",method = RequestMethod.GET)
+		    public String toUpdatePage(@PathVariable("id")Integer id,Map<String,Object> map)
+		    {
+		        //查询要修改的员工信息
+		        Employee employee = employeeDao.get(id);
+		        map.put("employee",employee);
+		
+		        Collection<Department> departments = departmentDao.getDepartments();
+		        map.put("depts",departments);
+		
+		        HashMap<Object, Object> hashMap = new HashMap<>();
+		        hashMap.put("0","女");
+		        hashMap.put("1","男");
+		        map.put("genders",hashMap);
+		
+		        return "input";
+		    }
+
+3. 修改页面
+
+		<!--头部增加c标签-->
+		<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+		<!--注意:提交地址之前是action="emp",因为修改操作地址必须是绝对路径才不会影响之前的添加操作,因此为了开发时不把路径写死,配成下面的路径参数-->
+		<form:form action="${pageContext.request.contextPath}/emp" method="post" modelAttribute="employee">
+		    <!--
+		    增加判断是添加操作还是修改操作:
+		    根据回显的Employee对象的id值来判断: 如果有id就是修改  如果没有id就是添加操作
+		    -->
+		    <c:if test="${!emptyee.id}" var="flag">
+		        <!-- 修改操作 -->
+		        <form:hidden path="id"/>
+			<!--因为是修改操作,应用PUT请求隐式显示-->
+		        <input type="hidden" name="_method" value="PUT"/>
+		    </c:if>
+		
+		    lastName:<form:input path="lastName" />
+		    <br/>
+		    Email:<form:input path="email"/>
+		    <br/>
+		    Gender:<form:radiobuttons path="gender" items="${genders}"/>
+		    <br/>
+		    deptName:<form:select path="department.id" items="${depts}" itemLabel="departmentName" itemValue="id"/>
+		    <br/>
+			<!--根据上面定义的flag标签判断是添加还是修改-->
+		    <c:if test="${flag}">
+		        <input type="submit" name="Edit"/>
+		    </c:if>
+		    <c:if test="${!flag}">
+		        <input type="submit" name="ADD"/>
+		    </c:if>
+		
+		</form:form>
+
+**提交表单，修改数据**
+
+控制器方法
+
+  	/**
+     * 修改功能: 具体的修改操作
+     */
+    @RequestMapping(value = "emp",method = RequestMethod.PUT)
+    public String editEmp(Employee employee)
+    {
+        employeeDao.save(employee);
+        return "redirect:/emps";
+    }
+
+**解决页面中文提交乱码问题**
+
+	<!--在web.xml配置增加过滤器,因为过滤器是按配置顺序执行,因此必须把字符过滤器优先配到最上面-->
+	  <!-- 字符编码过滤器 -->
+    <filter>
+        <filter-name>CharacterEncodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		<!--相关要配置的参数可以参考CharacterEncodingFilter类里的doFilterInternal()方法-->
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>CharacterEncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+# 处理JSON #
+
+1. 加入jar包：
+
+	
+	 		 <!--导入jackson相关包,增加对json数据的支持-->
+	        <dependency>
+	            <groupId>com.fasterxml.jackson.core</groupId>
+	            <artifactId>jackson-core</artifactId>
+	            <version>2.5.1</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>com.fasterxml.jackson.core</groupId>
+	            <artifactId>jackson-databind</artifactId>
+	            <version>2.5.1</version>
+	        </dependency>
+	        <dependency>
+	            <groupId>com.fasterxml.jackson.core</groupId>
+	            <artifactId>jackson-annotations</artifactId>
+	            <version>2.5.1</version>
+	        </dependency>
+
+2. 编写目标方法，使其返回 JSON 对应的对象或集合
+
+	
+	    /**
+	     处理Json
+	     **/
+	    @ResponseBody   // 负责将方法的返回值 转化成json字符串 响应给浏览器端.
+	    @RequestMapping(value = "testJson")
+	    public Collection<Employee> testJson()
+	    {
+	        Collection<Employee> emps = employeeDao.getAll();
+	        System.out.println(emps);
+	        return emps;
+	    }
+
+**特别注意:在调试过程中一直报java.util.HashMap转换类型错误或者**
+
+	nested exception is java.lang.NoClassDefFoundError: com/fasterxml/jackson/core/util/DefaultPrettyPrinter
+
+**这是因为在用IDEA开发过程中,生成的WEB目录下的lib没有上面对应的三个jar包,要把三个jar包引入WEB目录下lib**
+
+**HttpMessageConverter原理**
+
+1. **HttpMessageConverter<T>** 是 Spring3.0 新添加的一个接口，**负责将请求信息转换为一个对象（类型为 T），将对象（类型为 T）输出为响应信息**
+2. HttpMessageConverter<T>接口定义的方法：
+	1. Boolean canRead(Class<?> clazz,MediaType mediaType): 指定转换器可以读取的对象类型，即转换器是否可将请求信息转换为 clazz 类型的对象，同时指定支持 MIME 类型(text/html,applaiction/json等)
+	2. Boolean canWrite(Class<?> clazz,MediaType mediaType):指定转换器是否可将 clazz 类型的对象写到响应流中，响应流支持的媒体类型在MediaType 中定义。
+	3. List<MediaType> getSupportMediaTypes()：该转换器支持的媒体类型。
+	4. T read(Class<? extends T> clazz,**HttpInputMessage** inputMessage)：将请求信息流转换为 T 类型的对象。
+	5. void write(T t,MediaType contnetType,**HttpOutputMessgae** outputMessage):将T类型的对象写到响应流中，同时指定相应的媒体类型为 contentType。
+
+![](http://120.77.237.175:9080/photos/sprigmvc/14.png)
+
+		public interface HttpInputMessage extends HttpMessage {
+		    InputStream getBody() throws IOException;
+		}
+
+		public interface HttpOutputMessage extends HttpMessage {
+		    OutputStream getBody() throws IOException;
+		}
+
+
+		StringHttpMessageConverter		//将请求信息转换为字符串
+		FormHttpMessageConverter		//将表单数据读取到MultiValueMap中
+		XmlAwareFormHttpMessageConverter		//扩展于FormHttpMessageConverter,如果部分表单数据属性是XML数据,可用该转换器进行读取
+		ResourceHttpMessageConverter		//读写org.springframework.core.io.Resource对象
+		BufferedImageHttpMessageConverter		//读写BufferedImage对象
+		ByteArrayHttpMessageConverter		//读写二进制数据
+		SourceHttpMessageConverter		//读写javax.xml.transform.Source数据
+		MarshallingHttpMessageConverter		//通过Spring的org.springframework.xml.Marshaller和Unmarshaller读写XML消息
+		Jaxb2RootElementHttpMessageConverter
+		MappingJackson2HttpMessageConverter
+		RssChannelHttpMessageConverter
+		AtomFeedHttpMessageConverter

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.*;
 
@@ -87,4 +88,49 @@ public class RestCrudHandler {
         //重定向到列表
         return "redirect:/emps";
     }
+
+    /**
+     * 修改功能: 去往修改页面
+     */
+    @RequestMapping(value = "emp/{id}",method = RequestMethod.GET)
+    public String toUpdatePage(@PathVariable("id")Integer id,Map<String,Object> map)
+    {
+        //查询要修改的员工信息
+        Employee employee = employeeDao.get(id);
+        map.put("employee",employee);
+
+        Collection<Department> departments = departmentDao.getDepartments();
+        map.put("depts",departments);
+
+        HashMap<Object, Object> hashMap = new HashMap<>();
+        hashMap.put("0","女");
+        hashMap.put("1","男");
+        map.put("genders",hashMap);
+
+        return "input";
+    }
+
+    /**
+     * 修改功能: 具体的修改操作
+     */
+    @RequestMapping(value = "emp",method = RequestMethod.PUT)
+    public String editEmp(Employee employee)
+    {
+        employeeDao.save(employee);
+        return "redirect:/emps";
+    }
+
+
+    /**
+     处理Json
+     **/
+    @ResponseBody   // 负责将方法的返回值 转化成json字符串 响应给浏览器端.
+    @RequestMapping(value = "testJson")
+    public Collection<Employee> testJson()
+    {
+        Collection<Employee> emps = employeeDao.getAll();
+        System.out.println(emps);
+        return emps;
+    }
+
 }

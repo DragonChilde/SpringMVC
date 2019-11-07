@@ -24,6 +24,7 @@
     <!-- 不经过Handler(Controller)直接跳转到指定页面 -->
     <mvc:view-controller path="testViewContorller" view-name="success"/>
     <!-- 使用了view-controlelr以后，会导致RequestMapping的映射失效，因此需要加上 annotation-driven的配置 -->
+
     <mvc:annotation-driven/>
 
 
