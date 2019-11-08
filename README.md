@@ -1283,15 +1283,197 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
 		}
 
 
-		StringHttpMessageConverter		//将请求信息转换为字符串
-		FormHttpMessageConverter		//将表单数据读取到MultiValueMap中
-		XmlAwareFormHttpMessageConverter		//扩展于FormHttpMessageConverter,如果部分表单数据属性是XML数据,可用该转换器进行读取
-		ResourceHttpMessageConverter		//读写org.springframework.core.io.Resource对象
-		BufferedImageHttpMessageConverter		//读写BufferedImage对象
-		ByteArrayHttpMessageConverter		//读写二进制数据
-		SourceHttpMessageConverter		//读写javax.xml.transform.Source数据
-		MarshallingHttpMessageConverter		//通过Spring的org.springframework.xml.Marshaller和Unmarshaller读写XML消息
-		Jaxb2RootElementHttpMessageConverter
-		MappingJackson2HttpMessageConverter
-		RssChannelHttpMessageConverter
-		AtomFeedHttpMessageConverter
+- StringHttpMessageConverter		//将请求信息转换为字符串
+- FormHttpMessageConverter		//将表单数据读取到MultiValueMap中
+- XmlAwareFormHttpMessageConverter		//扩展于FormHttpMessageConverter,如果部分表单数据属性是XML数据,可用该转换器进行读取
+- ResourceHttpMessageConverter		//读写org.springframework.core.io.Resource对象
+- BufferedImageHttpMessageConverter		//读写BufferedImage对象
+- ByteArrayHttpMessageConverter		//读写二进制数据
+- SourceHttpMessageConverter		//读写javax.xml.transform.Source数据
+- MarshallingHttpMessageConverter		//通过Spring的org.springframework.xml.Marshaller和Unmarshaller读写XML消息
+- Jaxb2RootElementHttpMessageConverter		//通过JAXB2读写XML消息,将请求消息转换到标注XmlRootElement和XXMLTtyp连接的类中
+- MappingJackson2HttpMessageConverter		//利用Jackson开源包的ObjectMapper读写JSON数据
+- RssChannelHttpMessageConverter		//能够读写RSS种子消息
+- AtomFeedHttpMessageConverter		//和RssChannelHttpMessageConverter能够读写RSS种子消息
+
+3. DispatcherServlet 默认装配 RequestMappingHandlerAdapter，而 RequestMappingHandlerAdapter 默认装配如下 HttpMessageConverter：
+
+![](http://120.77.237.175:9080/photos/sprigmvc/15.png)
+
+4. 加入 jackson jar 包后， RequestMappingHandlerAdapter装配的 HttpMessageConverter如下
+
+![](http://120.77.237.175:9080/photos/sprigmvc/16.png)
+
+**默认情况下数组长度是6个；增加了jackson的包，后多个一个MappingJackson2HttpMessageConverter**
+
+**下载功能**
+
+	  /**
+     * 使用HttpMessageConveter完成下载功能:
+     *
+     * 支持  @RequestBody   @ResponseBody   HttpEntity  ResponseEntity
+     *
+     * 下载的原理:  将服务器端的文件 以流的形式  写到 客户端.
+     * ResponseEntity: 将要下载的文件数据， 以及响应信息封装到ResponseEntity对象中，浏览器端通过解析
+     * 				       发送回去的响应数据， 就可以进行一个下载操作.
+     */
+    @RequestMapping(value = "download")
+    public ResponseEntity<byte[]> testDownload(HttpSession session) throws IOException
+    {
+        //一,定义一个空的字符数组
+        byte[] bytes;
+
+        //二,获取本地图片的流
+        ServletContext context = session.getServletContext();
+        InputStream stream = context.getResourceAsStream("image/test.jpg");
+
+        //三,定义长度大小的字符
+        //available()在非阻塞情况下(本地读取,非网络流),获取已经流的长度大小
+        bytes = new byte[stream.available()];
+
+        //四,把本地流写入字符数组里
+        stream.read(bytes);
+
+        //五定义一个HTTP头信息
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add("Content-Disposition", "attachment;filename=test.jpg");
+
+        //返回ResponseEntity
+        ResponseEntity<byte[]> entity = new ResponseEntity<>(bytes, httpHeaders, HttpStatus.OK);
+
+        return entity;
+
+    }
+
+**<mvc:annotation-driven>的作用**:
+
+1. 配置了<mvc:view-controller>
+2. 配置了<mvc:default-servlet-handler/>
+3. 处理Json,对HttpMessageConveter的支持
+4. 对数据绑定流程的支持,对异常处理的支持
+
+**<mvc:annotation-driven>原理**:
+
+启动一些新的组件对象替换原先旧的组件对象,从而实现一些新的,更强大的功能
+
+解释:<mvc:default-servlet-handler/>为什么还要配<mvc:annotation-driven>?
+
+<mvc:default-servlet-handler/>和<mvc:annotation-driven>都没有配置的情况,DispatcherServlet中handlerAdapters装配:
+
+- HttpRequestHandlerAdapter
+- SimpleControllerHandlerAdapter
+- AnnotationMethodHandlerAdapter(spring3.2之后已废弃)
+
+<mvc:default-servlet-handler/>配置,<mvc:annotation-driven>不配置的情况,DispatcherServlet中handlerAdapters装配:
+
+- HttpRequestHandlerAdapter
+- SimpleControllerHandlerAdapter
+
+<mvc:default-servlet-handler/>和<mvc:annotation-driven>都配置的情况,DispatcherServlet中handlerAdapters装配:
+
+- HttpRequestHandlerAdapter
+- SimpleControllerHandlerAdapter
+- RequestMappingHandlerAdapter
+
+**总结:在Spring3.2之后,RequestMappingHandlerAdapter替换掉了AnnotationMethodHandlerAdapter**
+
+# 文件上传 #
+
+1. 拷贝jar包
+
+	    <!--文件上传依赖包-->
+        <dependency>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+            <version>1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.6</version>
+        </dependency>
+
+2. 配置文件上传解析器
+
+		 <!-- 配置文件的上传
+		    该bean的id值必须是 multipartResolver , 因为springmvc底层会通过该名字到容器中找对应的bean
+		  -->
+	    <!--具体是因为初始化DispatcherServlet时,传入的ApplicationContext上下文获取加载bean,默认把bean的ID写死了,id值必须是multipartResolver,不然会报异常-->
+	    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+	        <!-- 保证与上传表单所在的Jsp页面的编码一致. -->
+	        <property name="defaultEncoding" value="UTF-8"/>
+			<!--限制文件大小为10M-->
+	        <property name="maxUploadSize" value="10485760"/>
+	    </bean>
+
+3. 上传页面
+
+		<form action="upload" method="post" enctype="multipart/form-data">
+		    上传文件:<input type="file" name="uploadFile"/>
+		    <br/>
+		    文件描述:<input type="text" name="desc"/>
+		    <br/>
+		    <input type="submit" value="上传"/>
+		</form>
+
+4. 控制器方法
+
+	    /**
+	     * 文件的上传
+	     * 上传的原理:  将本地的文件 上传到 服务器端
+	     */
+	    @RequestMapping(value = "upload" )
+	    public String testUploadFile(@RequestParam("desc") String desc,@RequestParam("uploadFile")MultipartFile multipartFile, HttpSession session) throws IOException
+	    {
+	
+	        //获取到上传文件的名字
+	        String filename = multipartFile.getOriginalFilename();
+	        //获取输入流
+	        InputStream in = multipartFile.getInputStream();
+	
+	        //获取服务器端的uploads文件夹的真实路径。
+	        ServletContext context = session.getServletContext();
+	        String realPath = context.getRealPath("uploads");
+	
+	        File file = new File(realPath + "/" + filename);
+	
+	        FileOutputStream out = new FileOutputStream(file);
+	
+	        //写文件
+	        int i;
+	        while ((i = in.read()) != -1)
+	        {
+	            out.write(i);
+	        }
+	        out.close();
+	        in.close();
+	
+	        return "uploadsuccess";
+	    }
+
+
+		 /*上传文件更简单的实现,调用MultipartFile类里封装好的transferTo()方法,原理也是用Stream流进行读写*/
+	    @RequestMapping(value = "upload" )
+	    public String testUploadFile(@RequestParam("desc") String desc,@RequestParam("uploadFile")MultipartFile multipartFile, HttpSession session) throws IOException
+	    {
+	        String filename = multipartFile.getOriginalFilename();
+	
+	        ServletContext context = session.getServletContext();
+	        String realPath = context.getRealPath("uploads");
+	        File file = new File(realPath + "/" + filename);
+	        multipartFile.transferTo(file);
+	        return "uploadsuccess";
+	    }
+
+
+# 拦截器 #
+
+Spring MVC也可以使用拦截器对请求进行拦截处理，用户可以自定义拦截器来实现特定的功能，**自定义的拦截器可以实现HandlerInterceptor接口，或者可以继承
+HandlerInterceptorAdapter适配器类**
+
+1. **preHandle**()：这个方法在业务处理器处理请求之前被调用，在该方法中对用户请求 request 进行处理。**如果程序员决定该拦截器对请求进行拦截处理后还要调用其他的拦截器，或者是业务处理器去进行处理，则返回true；如果程序员决定不需要再调用其他的组件去处理请求，则返回false。**
+2. **postHandle**()：**这个方法在业务处理器处理完请求后，但是DispatcherServlet 向客户端返回响应前被调用**，在该方法中对用户请求request进行处理。
+3. **afterCompletion**()：这个方法**在 DispatcherServlet 完全处理完请求后被调用**，可以在该方法中进行一些资源清理的操作。
+
+
+**自定义拦截器类**

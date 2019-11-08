@@ -16,9 +16,9 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Class" />
-        <option value="Jsp File" />
         <option value="JavaScript File" />
+        <option value="Jsp File" />
+        <option value="Class" />
       </list>
     </option>
   </component>
@@ -54,19 +54,21 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$/web/WEB-INF/jsp-tld" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
-    <property name="project.structure.last.edited" value="Libraries" />
+    <property name="project.structure.last.edited" value="Artifacts" />
     <property name="project.structure.proportion" value="0.15" />
-    <property name="project.structure.side.proportion" value="0.45" />
+    <property name="project.structure.side.proportion" value="0.17701149" />
     <property name="settings.editor.selected.configurable" value="File.Encoding" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="F:\Code\SpringMVC\web\image" />
+      <recent name="F:\Code\SpringMVC\web" />
+      <recent name="F:\Code\SpringMVC\web\WEB-INF\image" />
       <recent name="F:\Code\SpringMVC\web\WEB-INF\jsp-tld" />
       <recent name="F:\Code\SpringMVC\web\WEB-INF" />
     </key>
-    <key name="MoveFile.RECENT_KEYS">
+    <key name="CopyFile.RECENT_KEYS">
       <recent name="F:\Code\SpringMVC\web\WEB-INF\jsp-tld" />
-      <recent name="F:\Code\SpringMVC\web" />
       <recent name="F:\Code\SpringMVC\web\WEB-INF" />
     </key>
   </component>
@@ -158,7 +160,7 @@
       </method>
     </configuration>
     <configuration name="Tomcat 9" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 9" ALTERNATIVE_JRE_ENABLED="false">
-      <option name="OPEN_IN_BROWSER_URL" value="http://localhost:8080/SpringMVC/" />
+      <option name="OPEN_IN_BROWSER" value="false" />
       <option name="BROWSER_ID" value="98ca6316-2f89-46d9-a9e5-fa9e2b0625b3" />
       <option name="UPDATING_POLICY" value="restart-server" />
       <deployment>
@@ -316,7 +318,9 @@
       <workItem from="1572861788275" duration="169000" />
       <workItem from="1572919876241" duration="1770000" />
       <workItem from="1572924293780" duration="8825000" />
-      <workItem from="1573006648063" duration="12045000" />
+      <workItem from="1573006648063" duration="12127000" />
+      <workItem from="1573093344140" duration="12964000" />
+      <workItem from="1573181981644" duration="14580000" />
     </task>
     <servers />
   </component>

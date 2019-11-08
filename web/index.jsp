@@ -87,5 +87,16 @@
 <a href="emps">List All Emps</a>
 <br/>
 <a href="testJson">Test Json</a>
+<br/>
+<a href="download">Test Download</a>
+<br/>
+
+<form action="upload" method="post" enctype="multipart/form-data">
+    上传文件:<input type="file" name="uploadFile"/>
+    <br/>
+    文件描述:<input type="text" name="desc"/>
+    <br/>
+    <input type="submit" value="上传"/>
+</form>
 </body>
 </html>
