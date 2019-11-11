@@ -54,8 +54,11 @@
 
     <!-- 配置拦截器 -->
     <mvc:interceptors>
+
         <!--1. 拦截所有的请求 -->
         <bean class="com.springmvc.interceptor.MyFirstInterceptor"/>
+        <!--定义第二个拦截器-->
+        <bean class="com.springmvc.interceptor.MySecondInterceptor"/>
         <!--如果在拦截器上定义了@Component组件,可以通过ref进行配置-->
        <!-- <ref bean="myFirstInterceptor"/>-->
 

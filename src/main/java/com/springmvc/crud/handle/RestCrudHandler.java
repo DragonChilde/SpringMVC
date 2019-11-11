@@ -228,5 +228,11 @@ public class RestCrudHandler {
 
 
 
+    @RequestMapping(value = "interceptor")
+    public String testInterceptor()
+    {
+        return "success";
+    }
+
 
 }

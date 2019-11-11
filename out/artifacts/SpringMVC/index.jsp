@@ -98,5 +98,8 @@
     <br/>
     <input type="submit" value="上传"/>
 </form>
+
+<br/>
+<a href="interceptor">Test Interceptor</a>
 </body>
 </html>

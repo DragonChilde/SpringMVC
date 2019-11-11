@@ -1477,3 +1477,202 @@ HandlerInterceptorAdapter适配器类**
 
 
 **自定义拦截器类**
+
+1. 自定义拦截器类 
+
+		/**
+		 * 自定义拦截器
+		 */
+		/*@Component*/
+		public class MyFirstInterceptor implements HandlerInterceptor {
+		
+		    /**
+		     * 1. 是在DispatcherServlet的939行   在请求处理方法之前执行
+		     */
+		    @Override
+		    public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o) throws Exception {
+		        System.out.println(this.getClass().getName() + " preHandle");
+		        return true;
+		    }
+		
+		    /**
+		     * 2. 在DispatcherServlet 959行   请求处理方法之后，视图处理之前执行。
+		     */
+		    @Override
+		    public void postHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, ModelAndView modelAndView) throws Exception {
+		        System.out.println(this.getClass().getName() + " postHandle");
+		    }
+		
+		    /**
+		     * 3.
+		     * 	 [1].在DispatcherServlet的 1030行   视图处理之后执行.(转发/重定向后执行)
+		     * 	 [2].当某个拦截器的preHandle返回false后，也会执行当前拦截器之前拦截器的afterCompletion
+		     *   [3].当DispatcherServlet的doDispatch方法抛出异常,也可能会执行拦截器的afterCompletion
+		     */
+		    @Override
+		    public void afterCompletion(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, Exception e) throws Exception {
+		        System.out.println(this.getClass().getName() + " afterCompletion");
+		    }
+		}
+
+2. 配置拦截器
+
+	   	<!-- 配置拦截器 -->
+	    <mvc:interceptors>
+	        <!--1. 拦截所有的请求 -->
+	        <bean class="com.springmvc.interceptor.MyFirstInterceptor"/>
+	        <!--如果在拦截器上定义了@Component组件,可以通过ref进行配置-->
+	       <!-- <ref bean="myFirstInterceptor"/>-->
+	
+	        <!-- 2. 指定拦截 或者指定不拦截 -->
+	       <!-- <mvc:interceptor>
+	            <mvc:mapping path="emps"/>      &lt;!&ndash;指定拦截哪些路径&ndash;&gt;
+	            <mvc:exclude-mapping path="emps"/>  &lt;!&ndash;指定不拦截哪些路径&ndash;&gt;
+	            <bean class="com.springmvc.interceptor.MyFirstInterceptor"/>
+	            <ref bean="myFirstInterceptor"/>
+	        </mvc:interceptor>-->
+	    </mvc:interceptors>
+
+3. 拦截器方法执行顺序
+
+![](http://120.77.237.175:9080/photos/sprigmvc/17.png)
+
+**多个拦截器**
+
+1. 自定义拦截器类(两个)
+
+		public class MySecondInterceptor implements HandlerInterceptor {
+		    @Override
+		    public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o) throws Exception {
+		        System.out.println(this.getClass().getName() + " preHandle");
+		        return true;
+		    }
+		
+		    @Override
+		    public void postHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, ModelAndView modelAndView) throws Exception {
+		        System.out.println(this.getClass().getName() + " postHandle");
+		    }
+		
+		    @Override
+		    public void afterCompletion(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, Exception e) throws Exception {
+		        System.out.println(this.getClass().getName() + " afterCompletion");
+		    }
+		}
+
+2. 配置自定义拦截器
+
+	   	<!-- 配置拦截器 -->
+	    <mvc:interceptors>
+	        <!--1. 拦截所有的请求 -->
+	        <bean class="com.springmvc.interceptor.MyFirstInterceptor"/>
+			<!--定义第二个拦截器-->
+	        <bean class="com.springmvc.interceptor.MySecondInterceptor"/>
+	        <!--如果在拦截器上定义了@Component组件,可以通过ref进行配置-->
+	       <!-- <ref bean="myFirstInterceptor"/>-->
+	
+	        <!-- 2. 指定拦截 或者指定不拦截 -->
+	       <!-- <mvc:interceptor>
+	            <mvc:mapping path="emps"/>      &lt;!&ndash;指定拦截哪些路径&ndash;&gt;
+	            <mvc:exclude-mapping path="emps"/>  &lt;!&ndash;指定不拦截哪些路径&ndash;&gt;
+	            <bean class="com.springmvc.interceptor.MyFirstInterceptor"/>
+	            <ref bean="myFirstInterceptor"/>
+	        </mvc:interceptor>-->
+	    </mvc:interceptors>
+
+		<!--拦截器的执行顺序根据配置的前后顺序有关-->
+		<!--
+		com.springmvc.interceptor.MyFirstInterceptor preHandle
+		com.springmvc.interceptor.MySecondInterceptor preHandle
+		com.springmvc.interceptor.MySecondInterceptor postHandle
+		com.springmvc.interceptor.MyFirstInterceptor postHandle
+		com.springmvc.interceptor.MySecondInterceptor afterCompletion
+		com.springmvc.interceptor.MyFirstInterceptor afterCompletion
+		-->
+
+**多个拦截方法的执行顺序**
+
+1. 关于执行顺序
+
+		<!--
+		com.springmvc.interceptor.MyFirstInterceptor preHandle
+		com.springmvc.interceptor.MySecondInterceptor preHandle
+		com.springmvc.interceptor.MySecondInterceptor postHandle
+		com.springmvc.interceptor.MyFirstInterceptor postHandle
+		com.springmvc.interceptor.MySecondInterceptor afterCompletion
+		com.springmvc.interceptor.MyFirstInterceptor afterCompletion
+		-->
+
+2. 执行顺序图解
+
+![](http://120.77.237.175:9080/photos/sprigmvc/18.png)
+
+3. 从源代码的执行角度分析流程
+
+![](http://120.77.237.175:9080/photos/sprigmvc/19.png)
+
+可以看到现在加载到有3个拦截器，第一个是SpringMVC的，这里不作讨论
+
+    boolean applyPreHandle(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        HandlerInterceptor[] interceptors = this.getInterceptors();
+        if (!ObjectUtils.isEmpty(interceptors)) {
+			/**this.interceptorIndex默认是从-1开始，递增遍历加载的三个拦截器同时赋值给this.interceptorIndex，最终this.interceptorIndex为2**/
+            for(int i = 0; i < interceptors.length; this.interceptorIndex = i++) {
+                HandlerInterceptor interceptor = interceptors[i];
+				/**注意:在拦截器里现在首个拦截全部都是返回true的，这里判断是非真，判断是false，没有进入**/
+                if (!interceptor.preHandle(request, response, this.handler)) {
+                    this.triggerAfterCompletion(request, response, (Exception)null);
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+	/**因此执行顺序是以下**/
+	/**
+		com.springmvc.interceptor.MyFirstInterceptor preHandle
+		com.springmvc.interceptor.MySecondInterceptor preHandle
+	**/
+
+	void applyPostHandle(HttpServletRequest request, HttpServletResponse response, ModelAndView mv) throws Exception {
+        HandlerInterceptor[] interceptors = this.getInterceptors();
+        if (!ObjectUtils.isEmpty(interceptors)) {
+			/**这里是按拦截器的长度进行递减遍历**/
+            for(int i = interceptors.length - 1; i >= 0; --i) {
+                HandlerInterceptor interceptor = interceptors[i];
+                interceptor.postHandle(request, response, this.handler, mv);
+            }
+        }
+
+    }
+	/**因此执行顺序是以下**/
+	/**
+		com.springmvc.interceptor.MySecondInterceptor postHandle
+		com.springmvc.interceptor.MyFirstInterceptor postHandle
+	**/
+
+    void triggerAfterCompletion(HttpServletRequest request, HttpServletResponse response, Exception ex) throws Exception {
+        HandlerInterceptor[] interceptors = this.getInterceptors();
+        if (!ObjectUtils.isEmpty(interceptors)) {
+			/**根据上面的索引赋值，值为2进行递减遍历**/
+            for(int i = this.interceptorIndex; i >= 0; --i) {
+                HandlerInterceptor interceptor = interceptors[i];
+                try {
+                    interceptor.afterCompletion(request, response, this.handler, ex);
+                } catch (Throwable var8) {
+                    logger.error("HandlerInterceptor.afterCompletion threw exception", var8);
+                }
+            }
+        }
+
+    }
+
+	/**因此执行顺序是以下**/
+	/**
+		om.springmvc.interceptor.MySecondInterceptor afterCompletion
+		com.springmvc.interceptor.MyFirstInterceptor afterCompletion
+	**/
+
+如果在在MyFirstInterceptor.preHandle()返回false时，只会打印com.springmvc.interceptor.MyFirstInterceptor preHandle就不会再执行
+
+![](http://120.77.237.175:9080/photos/sprigmvc/20.png)
