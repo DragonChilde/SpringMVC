@@ -22,4 +22,11 @@ public class SpringMVCHandler {
         System.out.println("hello world!");
         return "success";
     }
+
+
+    @RequestMapping(value = "helloservlet")
+    public String helloServlet()
+    {
+        return "success";
+    }
 }

@@ -1710,3 +1710,185 @@ HandlerInterceptorAdapter适配器类**
 	因为执行完第一个拦截器后是不会满足条件进入判断,执行第二个拦截器会进入if (!interceptor.preHandle(request, response, this.handler))的判断调用 this.triggerAfterCompletion()方法,因此多个拦截器只要preHandle返回true,都会成功执行到afterCompletion()方法,看下图
 
 ![](http://120.77.237.175:9080/photos/sprigmvc/20.png)
+
+# 运行流程图解 #
+
+**流程图**
+
+![](http://120.77.237.175:9080/photos/sprigmvc/21.png)
+
+**Spring工作流程描述**
+
+1. 用户向服务器发送请求，请求被SpringMVC 前端控制器 DispatcherServlet捕获；
+2. DispatcherServlet对请求URL进行解析，得到请求资源标识符（URI）:
+
+	判断请求URI对应的映射
+	1. 不存在：
+		- 再判断是否配置了mvc:default-servlet-handler：
+		- 如果没配置，则控制台报映射查找不到，客户端展示404错误
+		- 如果有配置，则执行目标资源（一般为静态资源，如：JS,CSS,HTML）
+	2. 存在：
+		- 执行下面流程
+3. 根据该URI，调用HandlerMapping获得该Handler配置的所有相关的对象（包括Handler对象以及Handler对象对应的拦截器），最后以HandlerExecutionChain对象的形式返回；
+4. DispatcherServlet 根据获得的Handler，选择一个合适的HandlerAdapter。
+5. 如果成功获得HandlerAdapter后，此时将开始执行拦截器的preHandler(...)方法【正向】
+6. 提取Request中的模型数据，填充Handler入参，开始执行Handler（Controller)方法，处理请求。在填充Handler的入参过程中，根据你的配置，Spring将帮你做一些额外的工作：
+	1. HttpMessageConveter： 将请求消息（如Json、xml等数据）转换成一个对象，将对象转换为指定的响应信息
+	2. 数据转换：对请求消息进行数据转换。如String转换成Integer、Double等
+	3. 数据根式化：对请求消息进行数据格式化。 如将字符串转换成格式化数字或格式化日期等
+	4. 数据验证： 验证数据的有效性（长度、格式等），验证结果存储到BindingResult或Error中
+7. Handler执行完成后，向DispatcherServlet 返回一个ModelAndView对象；
+8. 此时将开始执行拦截器的postHandle(...)方法【逆向】
+9. 根据返回的ModelAndView（此时会判断是否存在异常：如果存在异常，则执行HandlerExceptionResolver进行异常处理）选择一个适合的ViewResolver（必须是已经注册到Spring容器中的ViewResolver)返回给DispatcherServlet，根据Model和View，来渲染视图
+10. 在返回给客户端时需要执行拦截器的AfterCompletion方法【逆向】
+11. 将渲染结果返回给客户端
+
+**DEBUG**
+
+1. 正常流程,运行出结果
+2. 没有配置<mvc:default-servlet-handler/>，<mvc:annotation-driven/>,访问一个不存在的链接会报404页面和异常
+
+		org.springframework.web.servlet.PageNotFound.noHandlerFound No mapping found for HTTP request with URI [/SpringMVC/add] in DispatcherServlet with name 'springDispatcherServlet'
+	- 因为这时访问请求交给了DispatchServlet处理
+3. 当配置了<mvc:default-servlet-handler/>,访问一个不存在的链接报404页面,但不会报No mapping异常
+	- 因为这时访问请求交给了服务器(Tomcat)处理去匹配目录链接
+
+# Spring整合SpringMVC #
+
+是否需要在web.xml 文件中配置启动 Spring IOC 容器的 ContextLoaderListener ?
+
+- 需要: 通常情况下, 类似于数据源, 事务, 整合其他框架都是放在 Spring 的配置文件中(而不是放在 SpringMVC 的配置文件中). 实际上放入 Spring 配置文件对应的 IOC 容器中的还有 Service 和 Dao. 
+- 不需要: 都放在 SpringMVC 的配置文件中. 也可以分多个 Spring 的配置文件, 然后使用 import 节点导入其他的配置文件 
+
+
+如何启动Spring IOC容器?
+
+- 非WEB环境： 直接在main方法或者是junit测试方法中通过new操作来创建.
+- WEB 环境: 我们希望SpringIOC容器在WEB应用服务器启动时就被创建.通过监听器来监听ServletContext对象的创建, 监听到ServletContext对象被创建，就创建SpringIOC容器。 并且将容器对象绑定到ServletContext中， 让所有的web组件能共享到IOC容器对象. 
+
+
+**测试模拟SpringMVC ContextLoaderListener监听加载容器**
+
+**新建立web.xml**
+
+	<?xml version="1.0" encoding="UTF-8"?>
+	<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0">
+	    <!--模拟SpringMVC的ContextLoaderListener监听-->
+    <servlet>
+        <display-name>HelloServlet</display-name>
+        <servlet-name>HelloServlet</servlet-name>
+        <servlet-class>com.springmvc.servlet.HelloServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>HelloServlet</servlet-name>
+        <url-pattern>/HelloServlet</url-pattern>
+    </servlet-mapping>
+    <listener>
+        <listener-class>com.springmvc.listener.MyServletContextListener</listener-class>
+    </listener>
+	</web-app>
+
+**新建立spring.xml**
+
+	<?xml version="1.0" encoding="UTF-8"?>
+	<beans xmlns="http://www.springframework.org/schema/beans"
+	       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	
+	<bean id="person" class="com.springmvc.bean.Person">
+	    <property name="name" value="test"/>
+	</bean>
+	</beans>
+
+
+**com.springmvc.listener.MyServletContextListener**
+
+	public class MyServletContextListener implements ServletContextListener {
+	    /**
+	     * 当监听到ServletContext被创建，则执行该方法
+	     */
+	    @Override
+	    public void contextInitialized(ServletContextEvent servletContextEvent) {
+	        //1. 创建SpringIOC容器对象
+	        ApplicationContext context = new ClassPathXmlApplicationContext("spring.xml");
+	        //2. 将SpringIOC容器对象绑定到ServletContext中
+	        ServletContext servletContext = servletContextEvent.getServletContext();
+	        servletContext.setAttribute("applicationContext",context);
+	    }
+	
+	    @Override
+	    public void contextDestroyed(ServletContextEvent servletContextEvent) {
+	
+	    }
+	}
+
+**com.springmvc.servlet.HelloServlet**
+
+	public class HelloServlet extends HttpServlet {
+	    @Override
+	    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	
+	        //访问到SpringIOC容器中的person对象.
+	        //从ServletContext对象中获取SpringIOC容器对象
+	        ServletContext servletContext = getServletContext();
+	        ApplicationContext context = (ApplicationContext)servletContext.getAttribute("applicationContext");
+	        Person person = context.getBean("person", Person.class);
+	        person.sayHello();
+	    }
+	
+	    @Override
+	    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	        super.doPost(req, resp);
+	    }
+	}
+
+链接
+	
+	http://localhost:8080/SpringMVC/HelloServlet
+
+最终结果,打印出:My name is test
+
+**Spring整合SpringMVC_解决方案配置监听器**
+
+1. 监听器配置
+
+	  	<!-- 初始化SpringIOC容器的监听器 -->
+	    <context-param>
+	        <param-name>contextConfigLocation</param-name>
+	        <param-value>classpath:spring.xml</param-value>
+	    </context-param>
+	    <listener>
+	        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	    </listener>
+		<!--分析ContextLoaderListener源码发现,加载容器的方式与上面模拟的思路都是一样的-->
+
+2. 配置文件：springmvc.xml
+
+		<?xml version="1.0" encoding="UTF-8"?>
+		<beans xmlns="http://www.springframework.org/schema/beans"
+		       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		       xmlns:context="http://www.springframework.org/schema/context"
+		       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+		
+		
+		<bean id="person" class="com.springmvc.bean.Person">
+		    <property name="name" value="test"/>
+		</bean>
+		
+		    <context:component-scan base-package="com.springmvc"/>
+		</beans>
+
+3. 增加com.springmvc.handler.UserHandler
+
+		@Controller
+		public class UserHandler {
+		
+		    public UserHandler() {
+		        System.out.println(this.getClass().getName());
+		    }
+		}
+

@@ -4,6 +4,14 @@
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
          version="4.0">
 
+    <!-- 初始化SpringIOC容器的监听器 -->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:spring.xml</param-value>
+    </context-param>
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
 
     <!-- 字符编码过滤器 -->
     <filter>
@@ -62,4 +70,17 @@
     </servlet-mapping>
 
 
+    <!--模拟SpringMVC的ContextLoaderListener监听-->
+  <!--  <servlet>
+        <display-name>HelloServlet</display-name>
+        <servlet-name>HelloServlet</servlet-name>
+        <servlet-class>com.springmvc.servlet.HelloServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>HelloServlet</servlet-name>
+        <url-pattern>/helloservlet/</url-pattern>
+    </servlet-mapping>
+    <listener>
+        <listener-class>com.springmvc.listener.MyServletContextListener</listener-class>
+    </listener>-->
 </web-app>
