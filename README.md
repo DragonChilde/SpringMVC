@@ -1487,7 +1487,7 @@ HandlerInterceptorAdapter适配器类**
 		public class MyFirstInterceptor implements HandlerInterceptor {
 		
 		    /**
-		     * 1. 是在DispatcherServlet的939行   在请求处理方法之前执行
+		     * 1. 是在DispatcherServlet的962行   在请求处理方法之前执行
 		     */
 		    @Override
 		    public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o) throws Exception {
@@ -1496,7 +1496,7 @@ HandlerInterceptorAdapter适配器类**
 		    }
 		
 		    /**
-		     * 2. 在DispatcherServlet 959行   请求处理方法之后，视图处理之前执行。
+		     * 2. 在DispatcherServlet 974行   请求处理方法之后，视图处理之前执行。
 		     */
 		    @Override
 		    public void postHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, ModelAndView modelAndView) throws Exception {
@@ -1505,7 +1505,7 @@ HandlerInterceptorAdapter适配器类**
 		
 		    /**
 		     * 3.
-		     * 	 [1].在DispatcherServlet的 1030行   视图处理之后执行.(转发/重定向后执行)
+		     * 	 [1].在DispatcherServlet的 1059行   视图处理之后执行.(转发/重定向后执行)
 		     * 	 [2].当某个拦截器的preHandle返回false后，也会执行当前拦截器之前拦截器的afterCompletion
 		     *   [3].当DispatcherServlet的doDispatch方法抛出异常,也可能会执行拦截器的afterCompletion
 		     */
@@ -1673,6 +1673,40 @@ HandlerInterceptorAdapter适配器类**
 		com.springmvc.interceptor.MyFirstInterceptor afterCompletion
 	**/
 
-如果在在MyFirstInterceptor.preHandle()返回false时，只会打印com.springmvc.interceptor.MyFirstInterceptor preHandle就不会再执行
+- 如果在在MyFirstInterceptor.preHandle()返回false时，只会打印com.springmvc.interceptor.MyFirstInterceptor preHandle就不会再执行,可以看源码
+
+	    boolean applyPreHandle(HttpServletRequest request, HttpServletResponse response) throws Exception {
+	        HandlerInterceptor[] interceptors = this.getInterceptors();
+	        if (!ObjectUtils.isEmpty(interceptors)) {
+				/**this.interceptorIndex默认是从-1开始，递增遍历加载的三个拦截器同时赋值给this.interceptorIndex，最终this.interceptorIndex为2**/
+	            for(int i = 0; i < interceptors.length; this.interceptorIndex = i++) {
+	                HandlerInterceptor interceptor = interceptors[i];
+					/**现在是false,非假，判断为真,调用triggerAfterCompletion()方法，返回false，**/
+	                if (!interceptor.preHandle(request, response, this.handler)) {
+	                    this.triggerAfterCompletion(request, response, (Exception)null);
+	                    return false;
+	                }
+	            }
+	        }
+	
+	        return true;
+	    }
+	
+		/**在DispatchServlet.doDispatch()里,调用拦截器的applyPreHandle判断执行return,直接终止操作**/
+	    if (!mappedHandler.applyPreHandle(processedRequest, response)) {
+	        return;
+	    }
+
+- 当两个拦截器都返回false时,这时也只会打印 com.springmvc.interceptor.MyFirstInterceptor preHandle
+
+	因为在遍历过程中当第一个为flase后,this.triggerAfterCompletion()方法遍历无法找到自身的拦截器执行,因此只能直接return;
+
+- 当第一个拦截器为true,第二个拦截器为false时 打印的是
+
+	- com.springmvc.interceptor.MyFirstInterceptor preHandle
+	- com.springmvc.interceptor.MySecondInterceptor preHandle
+	- com.springmvc.interceptor.MyFirstInterceptor afterCompletion
+
+	因为执行完第一个拦截器后是不会满足条件进入判断,执行第二个拦截器会进入if (!interceptor.preHandle(request, response, this.handler))的判断调用 this.triggerAfterCompletion()方法,因此多个拦截器只要preHandle返回true,都会成功执行到afterCompletion()方法,看下图
 
 ![](http://120.77.237.175:9080/photos/sprigmvc/20.png)

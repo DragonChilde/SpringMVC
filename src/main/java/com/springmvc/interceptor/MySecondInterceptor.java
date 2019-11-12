@@ -14,7 +14,7 @@ public class MySecondInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o) throws Exception {
         System.out.println(this.getClass().getName() + " preHandle");
-        return true;
+        return false;
     }
 
     @Override

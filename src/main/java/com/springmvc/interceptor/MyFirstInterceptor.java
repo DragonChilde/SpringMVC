@@ -19,16 +19,16 @@ import javax.servlet.http.HttpServletResponse;
 public class MyFirstInterceptor implements HandlerInterceptor {
 
     /**
-     * 1. 是在DispatcherServlet的939行   在请求处理方法之前执行
+     * 1. 是在DispatcherServlet的962行   在请求处理方法之前执行
      */
     @Override
     public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o) throws Exception {
         System.out.println(this.getClass().getName() + " preHandle");
-        return false;
+        return true;
     }
 
     /**
-     * 2. 在DispatcherServlet 959行   请求处理方法之后，视图处理之前执行。
+     * 2. 在DispatcherServlet 974行   请求处理方法之后，视图处理之前执行。
      */
     @Override
     public void postHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, ModelAndView modelAndView) throws Exception {
@@ -37,7 +37,7 @@ public class MyFirstInterceptor implements HandlerInterceptor {
 
     /**
      * 3.
-     * 	 [1].在DispatcherServlet的 1030行   视图处理之后执行.(转发/重定向后执行)
+     * 	 [1].在DispatcherServlet的 1059行   视图处理之后执行.(转发/重定向后执行)
      * 	 [2].当某个拦截器的preHandle返回false后，也会执行当前拦截器之前拦截器的afterCompletion
      *   [3].当DispatcherServlet的doDispatch方法抛出异常,也可能会执行拦截器的afterCompletion
      */
