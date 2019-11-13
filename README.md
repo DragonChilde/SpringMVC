@@ -1,4 +1,3 @@
-# SpringMVC
 
 **常用主要组件**
 
@@ -20,12 +19,9 @@
 	         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	    <modelVersion>4.0.0</modelVersion>
-	
 	    <groupId>com.springmvc</groupId>
 	    <artifactId>SpringMVC</artifactId>
 	    <version>1.0-SNAPSHOT</version>
-	
-	
 	    <dependencies>
 	        <dependency>
 	            <groupId>org.springframework</groupId>
@@ -1872,9 +1868,7 @@ HandlerInterceptorAdapter适配器类**
 		<beans xmlns="http://www.springframework.org/schema/beans"
 		       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		       xmlns:context="http://www.springframework.org/schema/context"
-		       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
-		
-		
+		       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">	
 		<bean id="person" class="com.springmvc.bean.Person">
 		    <property name="name" value="test"/>
 		</bean>
@@ -1892,3 +1886,11 @@ HandlerInterceptorAdapter适配器类**
 		    }
 		}
 
+现在会出现一个问题,如下:
+
+		13-Nov-2019 10:07:15.803 淇℃伅 [RMI TCP Connection(3)-127.0.0.1] org.springframework.beans.factory.xml.XmlBeanDefinitionReader.loadBeanDefinitions Loading XML bean definitions from class path resource [spring.xml]
+		com.springmvc.handler.UserHandler
+		13-Nov-2019 10:07:16.457 淇℃伅 [RMI TCP Connection(3)-127.0.0.1] org.springframework.beans.factory.xml.XmlBeanDefinitionReader.loadBeanDefinitions Loading XML bean definitions from class path resource [springmvc.xml]
+		com.springmvc.handler.UserHandler
+
+**若Spring的IOC容器和SpringMVC的IOC容器扫描的包有重合的部分, 就会导致有的bean会被创建2次**
