@@ -1,4 +1,4 @@
-<a href="http://120.77.237.175:9080/photos/sprigmvc/">SpringMVC</a>
+<a href="http://120.77.237.175:9080/photos/springmvc/">SpringMVC</a>
 
 # 介绍
 
@@ -182,7 +182,7 @@
 
 1. HelloWorld请求流程图解
 
-	![](http://120.77.237.175:9080/photos/sprigmvc/8.png)
+	![](http://120.77.237.175:9080/photos/springmvc/8.png)
 
 2. 请求的映射路径名称和处理请求的方法名称最好一致（实质上方法名称任意）
 
@@ -228,7 +228,7 @@
 
 6. 流程分析
 
-	![](http://120.77.237.175:9080/photos/sprigmvc/9.png)
+	![](http://120.77.237.175:9080/photos/springmvc/9.png)
 
 **基本步骤**:
 
@@ -301,7 +301,7 @@
 
 ### 标准的 HTTP 请求报头  ###
 	
-![](http://120.77.237.175:9080/photos/sprigmvc/7.png)
+![](http://120.77.237.175:9080/photos/springmvc/7.png)
 
 ### 映射请求参数、请求方法或请求头 ###
 
@@ -765,8 +765,8 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
 3. 如果方法的入参为 Map 或 Model 类型，Spring MVC 会将隐含模型的引用传递给这些入参。
 4. 在方法体内，开发者可以通过这个入参对象访问到模型中的所有数据，也可以向模型中添加新的属性数据
 
-![](http://120.77.237.175:9080/photos/sprigmvc/10.png)
-![](http://120.77.237.175:9080/photos/sprigmvc/11.png)
+![](http://120.77.237.175:9080/photos/springmvc/10.png)
+![](http://120.77.237.175:9080/photos/springmvc/11.png)
 
     /**
      * Map
@@ -788,7 +788,7 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
 
 ## SpringMVC如何解析视图概述 ##
 
-![](http://120.77.237.175:9080/photos/sprigmvc/12.png)
+![](http://120.77.237.175:9080/photos/springmvc/12.png)
 
 1. 不论控制器返回一个String,ModelAndView,View都会转换为ModelAndView对象，由视图解析器解析视图，然后，进行页面的跳转
 2. 视图解析源码分析：重要的两个接口:**View**和**ViewResolver**
@@ -1021,7 +1021,7 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
         </html>
 4. 当没指定modelAttribute回显报异常
 
-    ![](http://120.77.237.175:9080/photos/sprigmvc/13.png)
+    ![](http://120.77.237.175:9080/photos/springmvc/13.png)
 
 ### 使用Spring的表单标签 ###
 
@@ -1302,7 +1302,7 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
     4. T read(Class<? extends T> clazz,**HttpInputMessage** inputMessage)：将请求信息流转换为 T 类型的对象。
     5. void write(T t,MediaType contnetType,**HttpOutputMessgae** outputMessage):将T类型的对象写到响应流中，同时指定相应的媒体类型为 contentType。
 
-![](http://120.77.237.175:9080/photos/sprigmvc/14.png)
+![](http://120.77.237.175:9080/photos/springmvc/14.png)
 
         public interface HttpInputMessage extends HttpMessage {
             InputStream getBody() throws IOException;
@@ -1328,11 +1328,11 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
 
 3. DispatcherServlet 默认装配 RequestMappingHandlerAdapter，而 RequestMappingHandlerAdapter 默认装配如下 HttpMessageConverter：
 
-![](http://120.77.237.175:9080/photos/sprigmvc/15.png)
+![](http://120.77.237.175:9080/photos/springmvc/15.png)
 
 4. 加入 jackson jar 包后， RequestMappingHandlerAdapter装配的 HttpMessageConverter如下
 
-![](http://120.77.237.175:9080/photos/sprigmvc/16.png)
+![](http://120.77.237.175:9080/photos/springmvc/16.png)
 
 **默认情况下数组长度是6个；增加了jackson的包，后多个一个MappingJackson2HttpMessageConverter**
 
@@ -1567,7 +1567,7 @@ HandlerInterceptorAdapter适配器类**
 
 3. 拦截器方法执行顺序
 
-![](http://120.77.237.175:9080/photos/sprigmvc/17.png)
+![](http://120.77.237.175:9080/photos/springmvc/17.png)
 
 ## 多个拦截器 ##
 
@@ -1636,11 +1636,11 @@ HandlerInterceptorAdapter适配器类**
 
 2. 执行顺序图解
 
-![](http://120.77.237.175:9080/photos/sprigmvc/18.png)
+![](http://120.77.237.175:9080/photos/springmvc/18.png)
 
 3. 从源代码的执行角度分析流程
 
-![](http://120.77.237.175:9080/photos/sprigmvc/19.png)
+![](http://120.77.237.175:9080/photos/springmvc/19.png)
 
 可以看到现在加载到有3个拦截器，第一个是SpringMVC的，这里不作讨论
 
@@ -1741,13 +1741,13 @@ HandlerInterceptorAdapter适配器类**
 
     因为执行完第一个拦截器后是不会满足条件进入判断,执行第二个拦截器会进入if (!interceptor.preHandle(request, response, this.handler))的判断调用 this.triggerAfterCompletion()方法,因此多个拦截器只要preHandle返回true,都会成功执行到afterCompletion()方法,看下图
 
-![](http://120.77.237.175:9080/photos/sprigmvc/20.png)
+![](http://120.77.237.175:9080/photos/springmvc/20.png)
 
 # 运行流程图解 #
 
 ## 流程图 ##
 
-![](http://120.77.237.175:9080/photos/sprigmvc/21.png)
+![](http://120.77.237.175:9080/photos/springmvc/21.png)
 
 ## Spring工作流程描述 ##
 
@@ -1955,7 +1955,7 @@ SpringMVC的IOC容器中的bean可以来引用Spring IOC容器中的 bean. 反�
 2. 多个 Spring IOC 容器之间可以设置为父子关系，以实现良好的解耦。
 3. Spring MVC WEB 层容器可作为 “业务层” Spring 容器的子容器：即 WEB 层容器可以引用业务层容器的 Bean，而业务层容器却访问不到 WEB 层容器的 Bean
 
-![](http://120.77.237.175:9080/photos/sprigmvc/22.png)
+![](http://120.77.237.175:9080/photos/springmvc/22.png)
 
 **SpringMVC从Spring ioc容器中获取容器对象方法**
 
