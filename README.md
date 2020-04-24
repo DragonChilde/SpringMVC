@@ -171,15 +171,18 @@
 
 ## **HelloWorld深度解析**
 
-springMVC Helloworld执行流程:
-1. 启动Tomcat服务器,会加载DispatcherServlet，然后就会读取springmvc.xml，进而创建好的Springmvc容器对象.创建Springmvc容器对象:组件扫描会扫描到请求处理器,以及请求处理器中@RequestMapping注解。能得到具体的请求与请求处理器中方法的映射
-2. 客户端发送请求：http://localhost:8080/SpringMVC/hello
-3. 请求到web.xml中与<url-pattern>进行匹配,匹配成功,就将请求交给DispatcherServlet
-4. DispatcherServlet根据请求与请求处理方法的映射,将请求交给具体的请求处理器中的请求处理方法来进行处理
-5. 请求处理方法处理完请求,最终方法会返回一个字符串
-6. 视图解析器根据请求处理方法返回的结果.prefix + returnValue + suffix,解析生成具体的物理视图路径，再通过转发的方式去往视图
+**springMVC Helloworld执行流程**:
 
-![](http://120.77.237.175:9080/photos/sprigmvc/8.png)
+	1. 启动Tomcat服务器,会加载DispatcherServlet，然后就会读取springmvc.xml，进而创建好的Springmvc容器对象.创建Springmvc容器对象:组件扫描会扫描到请求处理器,以及请求处理器中@RequestMapping注解。能得到具体的请求与请求处理器中方法的映射
+	2. 客户端发送请求：http://localhost:8080/SpringMVC/hello
+	3. 请求到web.xml中与<url-pattern>进行匹配,匹配成功,就将请求交给DispatcherServlet
+	4. DispatcherServlet根据请求与请求处理方法的映射,将请求交给具体的请求处理器中的请求处理方法来进行处理
+	5. 请求处理方法处理完请求,最终方法会返回一个字符串
+	6. 视图解析器根据请求处理方法返回的结果.prefix + returnValue + suffix,解析生成具体的物理视图路径，再通过转发的方式去往视图
+
+1. HelloWorld请求流程图解
+
+	![](http://120.77.237.175:9080/photos/sprigmvc/8.png)
 
 2. 请求的映射路径名称和处理请求的方法名称最好一致（实质上方法名称任意）
 
@@ -225,9 +228,9 @@ springMVC Helloworld执行流程:
 
 6. 流程分析
 
-![](http://120.77.237.175:9080/photos/sprigmvc/9.png)
+	![](http://120.77.237.175:9080/photos/sprigmvc/9.png)
 
-基本步骤:
+**基本步骤**:
 
 1. 客户端请求提交到DispatcherServlet
 2. 由DispatcherServlet控制器查询一个或多个HandlerMapping，找到处理请求的Controller
@@ -239,7 +242,9 @@ springMVC Helloworld执行流程:
 
 # @RequestMapping注解 #
 
-**@RequestMapping概念**
+## @RequestMapping 映射请求注解 ##
+
+### @RequestMapping概念 ###
 
 1. springMVC使用@RequestMapping注解为控制器指定可以处理哪些URL请求
 2. 在控制器的**类定义及方法定义处**都可标注 @RequestMapping
@@ -248,7 +253,7 @@ springMVC Helloworld执行流程:
 3. 若类上未标注 @RequestMapping，则方法处标记的 URL 相对于WEB应用的根目录
 4. 作用：DispatcherServlet 截获请求后，就通过控制器上 @RequestMapping 提供的映射信息确定请求所对应的处理方法
 
-**@ RequestMapping源码参考**
+### @ RequestMapping源码参考 ###
 
         /**consumes,produces这两个参数一般少用**/
         @Target({ElementType.METHOD, ElementType.TYPE})
@@ -275,7 +280,7 @@ springMVC Helloworld执行流程:
             String[] produces() default {};
         }
 
-**RequestMapping 可标注的位置**
+## RequestMapping 可标注的位置 ##
 
         <a href="springmvc/testRequestMapping">Test Request Mapping</a>
         /**没在类上标注@RequestMapping时，访问URL是testRequestMapping**/
@@ -292,9 +297,13 @@ springMVC Helloworld执行流程:
         
         }
 
-**RequestMapping映射请求方式**
+## RequestMapping映射请求方式 ##
 
-**映射请求参数、请求方法或请求头**
+### 标准的 HTTP 请求报头  ###
+	
+![](http://120.77.237.175:9080/photos/sprigmvc/7.png)
+
+### 映射请求参数、请求方法或请求头 ###
 
 1. @RequestMapping 除了可以使用请求 URL 映射请求外，还可以使用请求方法、请求参数及请求头映射请求
 2. @RequestMapping 的 value【重点】、method【重点】、params【了解】 及 heads【了解】 分别表示请求 URL、请求方法、请求参数及请求头的映射条件，他们之间是与的关系，联合使用多个条件可让请求映射更加精确化。
@@ -305,7 +314,7 @@ springMVC Helloworld执行流程:
         param1 != value1: 表示请求包含名为 param1 的请求参数，但其值不能为 value1
         {"param1=value1", "param2"}: 请求必须包含名为 param1 和param2 的两个请求参数，且 param1 参数的值必须为 value1
 
-示例:
+### 示例代码 ###
 
     /**这里指定了GET和POST两种方式的请求，如果只指定了一种方式，只能用对应的请求方式访问**/
       @RequestMapping(value = "testRequestMappingMethod",method = {RequestMethod.GET,RequestMethod.POST})
@@ -313,7 +322,7 @@ springMVC Helloworld执行流程:
         return "success";
     }
 
-**RequestMapping映射请求参数&请求头(了解)**
+## RequestMapping映射请求参数&请求头(了解) ##
 
     /**具体的表达式可以参考上面**/
     /**指定参数username不等于test,并且带有age参数,头信息带有Accept-Language才可访问**/
@@ -322,12 +331,13 @@ springMVC Helloworld执行流程:
         return "success";
     }
 
-**RequestMapping映射请求占位符PathVariable注解**
+## RequestMapping映射请求占位符PathVariable注解 ##
 
-**@PathVariable**
+### @PathVariable ###
 
 **带占位符的 URL 是 Spring3.0 新增的功能**，该功能在 SpringMVC向**REST**目标挺进发展过程中具有里程碑的意义
 **通过@PathVariable可以将URL中占位符参数绑定到控制器处理方法的入参中**：
+
 URL 中的 {xxx} 占位符可以通过 @PathVariable("xxx") 绑定到操作方法的入参中。
 
     /**
@@ -364,6 +374,7 @@ URL 中的 {xxx} 占位符可以通过 @PathVariable("xxx") 绑定到操作方�
 
 浏览器 form 表单只支持 GET 与 POST 请求，而DELETE、PUT 等 method 并不支持，Spring3.0 添加了一个过滤器，可以将这些请求转换为标准的 http 方法，使得支持 GET、POST、PUT 与 DELETE 请求。
 
+##  HiddenHttpMethodFilter过滤器源码分析 ##
 
     public class HiddenHttpMethodFilter extends OncePerRequestFilter {
         private static final List<String> ALLOWED_METHODS;
@@ -418,6 +429,8 @@ URL 中的 {xxx} 占位符可以通过 @PathVariable("xxx") 绑定到操作方�
             }
         }
     }
+
+## 测试 ##
 
 **配置HiddenHttpMethodFilter过滤器**
 
@@ -521,14 +534,14 @@ URL 中的 {xxx} 占位符可以通过 @PathVariable("xxx") 绑定到操作方�
 
 # 处理请求数据 #
 
-**请求处理方法签名**
+## 请求处理方法签名 ##
 
 1. Spring MVC 通过分析处理方法的签名，HTTP请求信息绑定到处理方法的相应形参中
 2. Spring MVC 对控制器处理方法签名的限制是很宽松的，几乎可以按喜欢的任何方式对方法进行签名。 
 3.    必要时可以对方法及方法入参标注相应的注解（ @PathVariable 、@RequestParam、@RequestHeader 等）、
 4.    Spring MVC 框架会将 HTTP 请求的信息绑定到相应的方法入参中，并根据方法的返回值类型做出相应的后续处理。
 
-**@RequestParam注解**
+## @RequestParam注解 ##
 
 1. 在处理方法入参处使用 @RequestParam 可以把请求参数传递给请求方法
 2. **value**：参数名
@@ -557,7 +570,7 @@ URL 中的 {xxx} 占位符可以通过 @PathVariable("xxx") 绑定到操作方�
     
     <a href="testRequestParam?username=test">Test Request Param</a>
 
-**@RequestHeader注解**
+## @RequestHeader注解 ##
 
 1. 使用@RequestHeader绑定请求报头的属性值
 2. 请求头包含了若干个属性，服务器可据此获知客户端的信息，通过 @RequestHeader即可将请求头中的属性值绑定到处理方法的入参中
@@ -579,7 +592,7 @@ URL 中的 {xxx} 占位符可以通过 @PathVariable("xxx") 绑定到操作方�
 
     <a href="testRequestHeader">Test Request Header</a>
 
-**@CookieValue 注解**
+## @CookieValue 注解 ##
 
 1. 使用 @CookieValue 绑定请求中的 Cookie 值
 2. @CookieValue 可让处理方法入参绑定某个 Cookie 值
@@ -600,7 +613,7 @@ URL 中的 {xxx} 占位符可以通过 @PathVariable("xxx") 绑定到操作方�
 
     <a href="testCookieValue">Test Cookie Value</a>
 
-**使用POJO作为参数**
+## 使用POJO作为参数 ##
 
 1. 使用 POJO 对象绑定请求参数值
 2. Spring MVC 会按请求参数名和 POJO 属性名进行自动匹配，自动为该对象填充属性值。支持级联属性。如：dept.deptId、dept.address.tel 等
@@ -646,7 +659,7 @@ URL 中的 {xxx} 占位符可以通过 @PathVariable("xxx") 绑定到操作方�
 
 **如果中文有乱码，需要配置字符编码过滤器，且配置其他过滤器之前,如（HiddenHttpMethodFilter），否则不起作用。**
 
-**使用Servlet原生API作为参数**
+## 使用Servlet原生API作为参数 ##
 
 MVC的Handler方法可以接受哪些ServletAPI类型的参数
 
@@ -677,12 +690,16 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
 
 # 处理响应数据 #
 
-**SpringMVC 输出模型数据概述，提供了以下几种途径输出模型数据**
+## SpringMVC 输出模型数据概述 ##
+
+### 提供了以下几种途径输出模型数据 ###
 
 1. **ModelAndView**: 处理方法返回值类型为 ModelAndView 时, 方法体即可通过该对象添加模型数据 
 2. **Map 及 Model**: 入参为 org.springframework.ui.Model、org.springframework.ui.ModelMap 或 java.uti.Map 时，处理方法返回时，Map 中的数据会自动添加到模型中
 
-**处理模型数据之ModelAndView**
+## 处理模型数据之ModelAndView ##
+
+### ModelAndView介绍 ###
 
 1. 控制器处理方法的返回值如果为 ModelAndView, 则其既包含视图信息，也包含模型
 数据信息。
@@ -697,7 +714,7 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
         void setView(View view)
         void setViewName(String viewName)
 
-示例:
+### 示例 ###
 
     @Controller
     public class SpringmvcModelAndViewHandler {
@@ -726,7 +743,7 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
 
     username: ${requestScope.get("username")} <!-- 四个域对象: pageScope  requestScope sessionScope  applicationScope -->
 
-**源码分析**:
+### 源码分析 ###
 
     1. 在com.springmvc.handler.modelandview.SpringmvcModelAndViewHandler.testModelAndView() return里打上断点
     2.分析看到熟悉的DispatcherServlet.doDispatch()
@@ -739,7 +756,9 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
     9.  此方法可以看到是个循环把模型里的key和value取出，set到request里
 
 
-**处理模型数据之 Map**
+## 处理模型数据之 Map ##
+
+### Map介绍 ###
 
 1. Spring MVC 在内部使用了一个 org.springframework.ui.Model 接口存储模型数据
 2. Spring MVC 在调用方法前会创建一个隐含的模型对象作为模型数据的存储容器。
@@ -767,20 +786,20 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
 
 # 视图解析 #
 
-**SpringMVC如何解析视图概述**
+## SpringMVC如何解析视图概述 ##
 
 ![](http://120.77.237.175:9080/photos/sprigmvc/12.png)
 
 1. 不论控制器返回一个String,ModelAndView,View都会转换为ModelAndView对象，由视图解析器解析视图，然后，进行页面的跳转
 2. 视图解析源码分析：重要的两个接口:**View**和**ViewResolver**
 
-**视图和视图解析器**
+## 视图和视图解析器 ##
 
 1. 请求处理方法执行完成后，最终返回一个 ModelAndView 对象。对于那些返回 String，View 或 ModeMap 等类型的处理方法，**Spring MVC也会在内部将它们装配成一个 ModelAndView对象**，它包含了逻辑名和模型对象的视图
 2. Spring MVC借助**视图解析器（ViewResolver）**得到最终的视图对象（View），最终的视图可以是 JSP ，也可能是 Excel、JFreeChart等各种表现形式的视图
 3. 对于最终究竟采取何种视图对象对模型数据进行渲染，处理器并不关心，处理器工作重点聚焦在生产模型数据的工作上，从而实现 MVC 的充分解耦
 
-**视图**
+## 视图 ##
 
 1. **视图**的作用是渲染模型数据，将模型里的数据以某种形式呈现给客户,主要就是完成转发或者是重定向的操作.
 2. 为了实现视图模型和具体实现技术的解耦，Spring 在 org.springframework.web.servlet 包中定义了一个高度抽象的 **View** 接口：
@@ -797,25 +816,26 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
 
 3. **视图对象由视图解析器负责实例化**。由于视图是**无状态**的，所以他们**不会有线程安全**的问题
 
-**常用的视图实现类**
+## 常用的视图实现类 ##
 
         URL资源图    **InternalResourceView    将JSP或其它资源封装成一个视图,是InternalResourceViewResolver默认使用的视图实现类
                     **JstlView        如果JSP文件中使用了JSTL国际化标签的功能,则需要使用该视图类
         
         文档视图        **AbstractExcelView        Excel文档视图的抽象类.该视图类基于POI构造Excel文档
-                    AbstractPdfView        PDF文档视图的抽象类,该视图类基于iText够着PDF文档
+                    	AbstractPdfView        PDF文档视图的抽象类,该视图类基于iText够着PDF文档
     
         (几个使用JasperReports报表技术的视图)
         报表视图        ConfigurableJsperReportsView
-                    JasperReportsCsvView
-                    JasperReportsMultiFormatView
-                    JasperReportsHtmlView
-                    JasperReportsPdfView
-                    JasperReportsXLsView
+                    	JasperReportsCsvView
+                    	JasperReportsMultiFormatView
+                    	JasperReportsHtmlView
+                    	JasperReportsPdfView
+                    	JasperReportsXLsView
+	
         JSON视图        MappingJacksonJsonView        将模型数据通过Jackson开源框架的ObjectMapper以JSON方式输出
 
 
-**视图解析器**
+## 视图解析器 ##
 
 1. SpringMVC 为逻辑视图名的解析提供了不同的策略，可以在 Spring WEB 上下文中配置一种或多种解析策略，并指定他们之间的先后顺序。每一种映射策略对应一个具体的视图解析器实现类。
 2. 视图解析器的作用比较单一：将逻辑视图解析为一个具体的视图对象。
@@ -825,7 +845,7 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
             View resolveViewName(String var1, Locale var2) throws Exception;
         }
 
-**常用的视图解析器实现类**
+## 常用的视图解析器实现类 ##
 
     解析为Bean的名字    BeanNameViewResolver    将逻辑视图解析为一个Bean，Bean的id等于逻辑视图名
     解析为URL文件        InternalResourceViewResolver    将视图名解析为一个URL文件,一般使用该解析器将视图名映射为一个保存在WEB-INF目录下的程序文件(如JSP)
@@ -846,7 +866,7 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
             </bean>
     2. /WEB-INF/views/xxx/xxx.jsp
 
-**mvc:view-controller标签**
+## mvc:view-controller标签 ##
 
 1. 若希望直接响应通过 SpringMVC 渲染的页面，可以使用**mvc:view-controller** 标签实现
 
@@ -858,7 +878,7 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
         <!-- 使用了view-controlelr以后，会导致RequestMapping的映射失效，因此需要加上 annotation-driven的配置 -->
         <mvc:annotation-driven/>
 
-**重定向**
+## 重定向 ##
 
 1. 关于重定向
     1. 一般情况下，控制器方法返回字符串类型的值会被当成逻辑视图名处理
@@ -921,7 +941,7 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
             <version>1.2.5</version>
         </dependency>
 
-**RESTRUL_CRUD_添加操作**
+## RESTRUL_CRUD_添加操作 ##
 
 1. 在list.jsp上增加连接
    
@@ -1003,7 +1023,7 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
 
     ![](http://120.77.237.175:9080/photos/sprigmvc/13.png)
 
-**使用Spring的表单标签**
+### 使用Spring的表单标签 ###
 
 1. 通过 SpringMVC 的**表单标签**可以实现将模型数据中的属性和 HTML 表单元素相绑定，以实现表单数据**更便捷编辑和表单值的回显**
 2. form 标签
@@ -1047,7 +1067,7 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
         return "redirect:/emps";
     }
 
-**RESTRUL_CRUD_删除操作&处理静态资源**
+## RESTRUL_CRUD_删除操作&处理静态资源 ##
 
 1. 引入静态资源/scripts/jquery-3.4.1.min.js
 2. 访问http://localhost:8080/SpringMVC/scripts/jquery-3.4.1.min.js,会报404异常
@@ -1075,7 +1095,7 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
 
         <mvc:annotation-driven />
 
-**关于<mvc:default-servlet-handler/>作用**
+### 关于<mvc:default-servlet-handler/>作用 ###
 
     <!-- 
     <mvc:default-servlet-handler/> 将在 SpringMVC 上下文中定义一个 DefaultServletHttpRequestHandler，
@@ -1106,7 +1126,7 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
     <mvc:default-servlet-handler/>
       <mvc:annotation-driven/>
 
-**删除操作**
+### 删除操作 ###
 
 在\WEB-INF\views\list.jsp增加DELET的POST请求
 
@@ -1128,7 +1148,7 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
         return "redirect:/emps";
     }
 
-**RESTRUL_CRUD_修改操作**
+### RESTRUL_CRUD_修改操作 ###
 
 **根据id查询员工对象，表单回显**
 
@@ -1209,7 +1229,7 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
         return "redirect:/emps";
     }
 
-**解决页面中文提交乱码问题**
+### 解决页面中文提交乱码问题 ###
 
     <!--在web.xml配置增加过滤器,因为过滤器是按配置顺序执行,因此必须把字符过滤器优先配到最上面-->
       <!-- 字符编码过滤器 -->
@@ -1228,6 +1248,8 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
     </filter-mapping>
 
 # 处理JSON #
+
+## 返回JSON ##
 
 1. 加入jar包：
 
@@ -1270,7 +1292,7 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
 
 **这是因为在用IDEA开发过程中,生成的WEB目录下的lib没有上面对应的三个jar包,要把三个jar包引入WEB目录下lib**
 
-**HttpMessageConverter原理**
+## HttpMessageConverter原理 ##
 
 1. **HttpMessageConverter<T>** 是 Spring3.0 新添加的一个接口，**负责将请求信息转换为一个对象（类型为 T），将对象（类型为 T）输出为响应信息**
 2. HttpMessageConverter<T>接口定义的方法：
@@ -1476,6 +1498,8 @@ MVC的Handler方法可以接受哪些ServletAPI类型的参数
 
 # 拦截器 #
 
+## 自定义拦截器概述 ##
+
 Spring MVC也可以使用拦截器对请求进行拦截处理，用户可以自定义拦截器来实现特定的功能，**自定义的拦截器可以实现HandlerInterceptor接口，或者可以继承
 HandlerInterceptorAdapter适配器类**
 
@@ -1484,7 +1508,7 @@ HandlerInterceptorAdapter适配器类**
 3. **afterCompletion**()：这个方法**在 DispatcherServlet 完全处理完请求后被调用**，可以在该方法中进行一些资源清理的操作。
 
 
-**自定义拦截器类**
+## 自定义拦截器类(单个) ##
 
 1. 自定义拦截器类 
 
@@ -1545,7 +1569,7 @@ HandlerInterceptorAdapter适配器类**
 
 ![](http://120.77.237.175:9080/photos/sprigmvc/17.png)
 
-**多个拦截器**
+## 多个拦截器 ##
 
 1. 自定义拦截器类(两个)
 
@@ -1597,7 +1621,7 @@ HandlerInterceptorAdapter适配器类**
         com.springmvc.interceptor.MyFirstInterceptor afterCompletion
         -->
 
-**多个拦截方法的执行顺序**
+## 多个拦截方法的执行顺序 ##
 
 1. 关于执行顺序
 
@@ -1721,11 +1745,11 @@ HandlerInterceptorAdapter适配器类**
 
 # 运行流程图解 #
 
-**流程图**
+## 流程图 ##
 
 ![](http://120.77.237.175:9080/photos/sprigmvc/21.png)
 
-**Spring工作流程描述**
+## Spring工作流程描述 ##
 
 1. 用户向服务器发送请求，请求被SpringMVC 前端控制器 DispatcherServlet捕获；
 2. DispatcherServlet对请求URL进行解析，得到请求资源标识符（URI）:
@@ -1751,7 +1775,7 @@ HandlerInterceptorAdapter适配器类**
 10. 在返回给客户端时需要执行拦截器的AfterCompletion方法【逆向】
 11. 将渲染结果返回给客户端
 
-**DEBUG**
+## DEBUG ##
 
 1. 正常流程,运行出结果
 2. 没有配置<mvc:default-servlet-handler/>，<mvc:annotation-driven/>,访问一个不存在的链接会报404页面和异常
@@ -1765,20 +1789,22 @@ HandlerInterceptorAdapter适配器类**
 
 # Spring整合SpringMVC #
 
-是否需要在web.xml 文件中配置启动 Spring IOC 容器的 ContextLoaderListener ?
+## Spring 与SpringMVC的整合问题 ##
+
+**是否需要在web.xml 文件中配置启动 Spring IOC 容器的 ContextLoaderListener ?**
 
 - 需要: 通常情况下, 类似于数据源, 事务, 整合其他框架都是放在 Spring 的配置文件中(而不是放在 SpringMVC 的配置文件中). 实际上放入 Spring 配置文件对应的 IOC 容器中的还有 Service 和 Dao. 
 - 不需要: 都放在 SpringMVC 的配置文件中. 也可以分多个 Spring 的配置文件, 然后使用 import 节点导入其他的配置文件 
 
 
-如何启动Spring IOC容器?
+**如何启动Spring IOC容器?**
 
 - 非WEB环境： 直接在main方法或者是junit测试方法中通过new操作来创建.
 - WEB 环境: 我们希望SpringIOC容器在WEB应用服务器启动时就被创建.通过监听器来监听ServletContext对象的创建, 监听到ServletContext对象被创建，就创建SpringIOC容器。 并且将容器对象绑定到ServletContext中， 让所有的web组件能共享到IOC容器对象. 
 
-## **测试模拟SpringMVC ContextLoaderListener监听加载容器**
+**测试模拟SpringMVC ContextLoaderListener监听加载容器**
 
-### **新建立web.xml**
+**新建立web.xml**
 
     <?xml version="1.0" encoding="UTF-8"?>
     <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
@@ -1800,7 +1826,7 @@ HandlerInterceptorAdapter适配器类**
     </listener>
     </web-app>
 
-### **新建立spring.xml**
+**新建立spring.xml**
 
 	    <?xml version="1.0" encoding="UTF-8"?>
 	    <beans xmlns="http://www.springframework.org/schema/beans"
@@ -1811,7 +1837,7 @@ HandlerInterceptorAdapter适配器类**
 	​    </bean>
 	​    </beans>
 
-###   **建立Listener**  
+**建立Listener**  
 
     public class MyServletContextListener implements ServletContextListener {
         /**
@@ -1832,7 +1858,7 @@ HandlerInterceptorAdapter适配器类**
         }
     }
 
-###   **建立Servlet**  
+**建立Servlet**  
 
     public class HelloServlet extends HttpServlet {
         @Override
@@ -1852,15 +1878,15 @@ HandlerInterceptorAdapter适配器类**
         }
     }
 
-### 配置链接
+**配置链接**
 
     http://localhost:8080/SpringMVC/HelloServlet
 
 **最终结果**:打印出:My name is test
 
-## **Spring整合SpringMVC解决方案配置监听器**
+## Spring整合SpringMVC解决方案配置监听器 ##
 
-### 监听器配置 ###
+**监听器配置**
 
       
       	<!-- 初始化SpringIOC容器的监听器 -->
@@ -1873,8 +1899,7 @@ HandlerInterceptorAdapter适配器类**
           </listener>
           <!--分析ContextLoaderListener源码发现,加载容器的方式与上面模拟的思路都是一样的-->
       
-### 配置文件：springmvc.xml ###
-
+**配置文件：springmvc.xml**
      
       		<?xml version="1.0" encoding="UTF-8"?>
      		<beans xmlns="http://www.springframework.org/schema/beans"
@@ -1887,7 +1912,7 @@ HandlerInterceptorAdapter适配器类**
      		    <context:component-scan base-package="com.springmvc"/>
      		</beans>
 
-### 增加控制器 ###
+**增加控制器** 
 
         @Controller
         public class UserHandler {
@@ -1932,7 +1957,7 @@ SpringMVC的IOC容器中的bean可以来引用Spring IOC容器中的 bean. 反�
 
 ![](http://120.77.237.175:9080/photos/sprigmvc/22.png)
 
-### **SpringMVC从Spring ioc容器中获取容器对象方法** ###
+**SpringMVC从Spring ioc容器中获取容器对象方法**
 
 	/*在方法里添加Servlet session参数*/
     @RequestMapping("hellospring")
